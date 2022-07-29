@@ -1,0 +1,52 @@
+@top Program { Formula }
+
+Formula {
+    ( formulaStart Arithmetic End )
+}
+
+Arithmetic {
+    Value ( Operator Value )*
+}
+
+Value {
+    Number | Function | Reference | Group | String | Boolean
+}
+
+Function { Identifier ParenLeft commaSep<Parameter> ParenRight }
+
+Parameter {
+    Arithmetic
+}
+
+Group {
+    ParenLeft Arithmetic ParenRight
+}
+
+Reference {
+    referenceStart identifierChain<Identifier>
+}
+
+identifierChain<content> { content ("." content | BracketLeft Number BracketRight)* }
+commaSep<content> { "" | content ("," content)* }
+
+@skip { space }
+
+@tokens {
+    @precedence { Boolean, Identifier }
+    ParenLeft[closedBy="ParenRight"] { "(" }
+    ParenRight { ")" }
+    BracketLeft[closedBy="BracketRight"] { "[" }
+    BracketRight { "]" }
+    formulaStart { "=" }
+    referenceStart { "$" }
+    Boolean { "true" | "false" }
+    Identifier { @asciiLetter ( @asciiLetter | @digit | "_" )* }
+    space { @whitespace+ }
+    Number { "-"* @digit+ "."? @digit* }
+    Operator { "+" | "-" | "*" | "/" | "^" }
+    String {
+        '"' (![\\\n"] | "\\" _)* '"'? |
+        "'" (![\\\n'] | "\\" _)* "'"?
+    }
+    End { @eof }
+}
