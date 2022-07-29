@@ -41,11 +41,13 @@ document.addEventListener("click", (e) => {
 </script>
 
 <template>
-  <Field v-for="(value, fieldName) of Object.fromEntries(fields)" :name="fieldName" :has-focus="hasFocus(fieldName)" @update-ast="handleUpdate" @focus-change="updateFocus">
-    {{ fieldName }}
-  </Field>
+  <div class="flex flex-col gap-4">
+    <Field v-for="fieldName of Object.keys(Object.fromEntries(fields))" :name="fieldName" :has-focus="hasFocus(fieldName)" @update-ast="handleUpdate" @focus-change="updateFocus">
+      {{ fieldName }}
+    </Field>
 
-  <button type="button" @click="createEmptyField" class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-    Create Field
-  </button>
+    <button type="button" @click="createEmptyField" class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      Create Field
+    </button>
+  </div>
 </template>

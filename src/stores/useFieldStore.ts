@@ -20,7 +20,7 @@ export const useFieldStore = defineStore('fieldStore', {
       this.fields.set(field, ast)
     },
     createNewField() {
-      const id = `field-${this.counter}`
+      const id = `field${this.counter}`
       this.fields.set(id, null)
       this.counter++
     },
