@@ -3,10 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "yarn grammar && vue-tsc --noEmit && vite build",
+    "build": "yarn build:grammar && vue-tsc --noEmit && vite build",
+    "test": "yarn build:grammar && vue-tsc --noEmit && vitest",
+    "dev": "yarn build:grammar && vite",
     "lint": "vue-cli-service lint",
-    "dev": "yarn grammar && vite",
-    "grammar": "nearleyc ./src/grammar/grammar.ne --out src/grammar/grammar.ts && lezer-generator src/grammar/lezer.grammar -o src/grammar/lezer.js",
+    "build:grammar": "nearleyc ./src/grammar/grammar.ne --out src/grammar/grammar.ts && lezer-generator src/grammar/lezer.grammar -o src/grammar/lezer.js",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -71,11 +71,11 @@ export type ParsedFormulaValue =
   ParsedString |
   ParsedFunction
 
-export type ParsedArithmetic = {
-  type: "arithmetic",
-  operation: {
-    left: ParsedArithmetic | ParsedNumber | ParsedReference,
-    operator: ParsedOperator,
+export interface ParsedArithmetic extends ParsedGrammar {
+  type: 'arithmetic'
+  value: {
+    left: ParsedArithmetic | ParsedNumber | ParsedReference
+    operator: ParsedOperator
     right: ParsedArithmetic | ParsedNumber | ParsedReference
   }
 }
@@ -86,6 +86,18 @@ export interface ParsedFormula extends ParsedGrammar {
 }
 
 export type Parsed = ParsedFormula
+
+export function isFormula(value: ParsedGrammar): value is ParsedFormula {
+  return value.type === 'formula'
+}
+
+export function isFunction(value: ParsedGrammar): value is ParsedFunction {
+  return value.type === 'function'
+}
+
+export function isReference(value: ParsedGrammar): value is ParsedReference {
+  return value.type === 'reference'
+}
 
 export class IncompleteInputError extends Error {}
 

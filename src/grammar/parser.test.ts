@@ -10,17 +10,16 @@ import {
   ParsedString
 } from "./parser"
 
-import { assert, expect, test } from 'vitest'
-
+import { expect, test } from 'vitest'
 
 test("parse false", () => {
   const result = parse("=false") as ParsedFormula[]
   const formula = result?.[0] as ParsedFormula
   const value = formula.value as ParsedBoolean
 
-  assert.deepEqual(formula.type, "formula")
-  assert.deepEqual(value.type, "boolean")
-  assert.deepEqual(value.value, false)
+  expect(formula.type).toBe("formula")
+  expect(value.type).toBe("boolean")
+  expect(value.value).toBe(false)
 })
 
 test("parse true", () => {
@@ -28,9 +27,9 @@ test("parse true", () => {
   const formula = result?.[0] as ParsedFormula
   const value = formula.value as ParsedBoolean
 
-  assert.deepEqual(formula.type, "formula")
-  assert.deepEqual(value.type, "boolean")
-  assert.deepEqual(value.value, true)
+  expect(formula.type).toBe("formula")
+  expect(value.type).toBe("boolean")
+  expect(value.value).toBe(true)
 })
 
 test("parse numbers", () => {
@@ -43,94 +42,107 @@ test("parse numbers", () => {
   const big = parse("=1232893434")?.[0] as ParsedFormula
   const bValue = big.value as ParsedNumber
 
-  assert.deepEqual(zValue.type, "number")
-  assert.deepEqual(zValue.value, 0)
-  assert.deepEqual(dValue.type, "number")
-  assert.deepEqual(dValue.value, 0.123)
-  assert.deepEqual(mValue.type, "number")
-  assert.deepEqual(mValue.value, -1)
-  assert.deepEqual(bValue.type, "number")
-  assert.deepEqual(bValue.value, 1232893434)
+  expect(zValue.type).toBe("number")
+  expect(zValue.value).toBe(0)
+  expect(dValue.type).toBe("number")
+  expect(dValue.value).toBe(0.123)
+  expect(mValue.type).toBe("number")
+  expect(mValue.value).toBe(-1)
+  expect(bValue.type).toBe("number")
+  expect(bValue.value).toBe(1232893434)
+})
+
+test("basic arithmetic", () => {
+  const result = parse("=1 + 1")?.[0] as ParsedFormula
+
+  const arithmetic = result.value as ParsedArithmetic
+  const left = arithmetic.value.left as ParsedNumber
+  const operator = arithmetic.value.operator
+  const right = arithmetic.value.right as ParsedArithmetic
+
+  expect(left.value).toBe(1)
+  expect(operator.value).toBe("+")
+  expect(right.value).toBe(1)
 })
 
 test("multiplication order", () => {
   const result = parse("=1 - 2 * 3")?.[0] as ParsedFormula
-  const value = result.value as ParsedArithmetic
-  const left = value.operation.left as ParsedNumber
-  const right = value.operation.right as ParsedArithmetic
-  const left2 = right.operation.left as ParsedNumber
-  const right2 = right.operation.right as ParsedNumber
+  const arithmetic = result.value as ParsedArithmetic
+  const left = arithmetic.value.left as ParsedNumber
+  const right = arithmetic.value.right as ParsedArithmetic
+  const left2 = right.value.left as ParsedNumber
+  const right2 = right.value.right as ParsedNumber
 
-  assert.deepEqual(left.value, 1)
-  assert.deepEqual(value.operation.operator.value, "-")
-  assert.deepEqual(left2.value, 2)
-  assert.deepEqual(right.operation.operator.value, "*")
-  assert.deepEqual(right2.value, 3)
+  expect(left.value).toBe(1)
+  expect(arithmetic.value.operator.value).toBe("-")
+  expect(left2.value).toBe(2)
+  expect(right.value.operator.value).toBe("*")
+  expect(right2.value).toBe(3)
 })
 
 test("division order", () => {
   const result = parse("=1 + 2 - 3 / 4")?.[0] as ParsedFormula
-  const value = result.value as ParsedArithmetic
-  const left = value.operation.left as ParsedArithmetic
-  const operator = value.operation.operator
-  const right = value.operation.right as ParsedArithmetic
+  const arithmetic = result.value as ParsedArithmetic
+  const left = arithmetic.value.left as ParsedArithmetic
+  const operator = arithmetic.value.operator
+  const right = arithmetic.value.right as ParsedArithmetic
 
-  const left1 = left.operation.left as ParsedNumber
-  const operator1 = left.operation.operator
-  const right1 = left.operation.right as ParsedNumber
+  const left1 = left.value.left as ParsedNumber
+  const operator1 = left.value.operator
+  const right1 = left.value.right as ParsedNumber
 
-  const left2 = right.operation.left as ParsedNumber
-  const operator2 = right.operation.operator
-  const right2 = right.operation.right as ParsedNumber
+  const left2 = right.value.left as ParsedNumber
+  const operator2 = right.value.operator
+  const right2 = right.value.right as ParsedNumber
 
-  assert.deepEqual(left1.value, 1)
-  assert.deepEqual(operator1.value, "+")
-  assert.deepEqual(right1.value, 2)
-  assert.deepEqual(operator.value, "-")
-  assert.deepEqual(left2.value, 3)
-  assert.deepEqual(operator2.value, '/')
-  assert.deepEqual(right2.value, 4)
+  expect(left1.value).toBe(1)
+  expect(operator1.value).toBe("+")
+  expect(right1.value).toBe(2)
+  expect(operator.value).toBe("-")
+  expect(left2.value).toBe(3)
+  expect(operator2.value).toBe('/')
+  expect(right2.value).toBe(4)
 })
 
 test("parse addition", () => {
   const result = parse("=1 + 2 - 3")?.[0] as ParsedFormula
-  const value = result.value as ParsedArithmetic
-  const left = value.operation.left as ParsedArithmetic
-  const right = value.operation.right as ParsedNumber
+  const arithmetic = result.value as ParsedArithmetic
+  const left = arithmetic.value.left as ParsedArithmetic
+  const right = arithmetic.value.right as ParsedNumber
 
-  const left2 = left.operation.left as ParsedNumber
-  const operator2 = left.operation.operator as ParsedOperator
-  const right2 = left.operation.right as ParsedNumber
+  const left2 = left.value.left as ParsedNumber
+  const operator2 = left.value.operator as ParsedOperator
+  const right2 = left.value.right as ParsedNumber
 
-  assert.deepEqual(left2.value, 1)
-  assert.deepEqual(operator2.value, "+")
-  assert.deepEqual(right2.value, 2)
-  assert.deepEqual(value.operation.operator.value, "-")
-  assert.deepEqual(right.value, 3)
+  expect(left2.value).toBe(1)
+  expect(operator2.value).toBe("+")
+  expect(right2.value).toBe(2)
+  expect(arithmetic.value.operator.value).toBe("-")
+  expect(right.value).toBe(3)
 })
 
 test("parse parens", () => {
   const result = parse("=1 + (2 - 3)")?.[0] as ParsedFormula
-  const value = result.value as ParsedArithmetic
-  const left = value.operation.left as ParsedNumber
-  const right = value.operation.right as ParsedArithmetic
+  const arithmetic = result.value as ParsedArithmetic
+  const left = arithmetic.value.left as ParsedNumber
+  const right = arithmetic.value.right as ParsedArithmetic
 
-  const left2 = right.operation.left as ParsedNumber
-  const right2 = right.operation.right as ParsedNumber
+  const left2 = right.value.left as ParsedNumber
+  const right2 = right.value.right as ParsedNumber
 
-  assert.deepEqual(left.value, 1)
-  assert.deepEqual(value.operation.operator.value, "+")
-  assert.deepEqual(left2.value, 2)
-  assert.deepEqual(right.operation.operator.value, "-")
-  assert.deepEqual(right2.value, 3)
+  expect(left.value).toBe(1)
+  expect(arithmetic.value.operator.value).toBe("+")
+  expect(left2.value).toBe(2)
+  expect(right.value.operator.value).toBe("-")
+  expect(right2.value).toBe(3)
 })
 
 test("functions", () => {
   const result = parse("=func()")?.[0] as ParsedFormula
   const value = result.value as ParsedFunction
 
-  assert.deepEqual(value.type, "function")
-  assert.deepEqual(value.value.params, [])
+  expect(value.type).toBe("function")
+  expect(value.value.params).toStrictEqual([])
 })
 
 test("functions with a parameter", () => {
@@ -139,36 +151,36 @@ test("functions with a parameter", () => {
   const value = result.value as ParsedFunction
   const number = value.value.params?.[0] as ParsedNumber
 
-  assert.deepEqual(value.type, "function")
-  assert.deepEqual(number.value, 1)
+  expect(value.type).toBe("function")
+  expect(number.value).toBe(1)
 })
 
 test("functions with a parameter sum", () => {
   const result = parse("=func(1 + 2)")?.[0] as ParsedFormula
-  const value = result.value as ParsedFunction
-  const sum = value.value.params?.[0] as ParsedArithmetic
-  const left = sum.operation.left as ParsedNumber
-  const operator = sum.operation.operator
-  const right = sum.operation.right as ParsedNumber
+  const arithmetic = result.value as ParsedFunction
+  const sum = arithmetic.value.params?.[0] as ParsedArithmetic
+  const left = sum.value.left as ParsedNumber
+  const operator = sum.value.operator
+  const right = sum.value.right as ParsedNumber
 
-  assert.deepEqual(value.type, "function")
-  assert.deepEqual(value.value.name, "func")
-  assert.deepEqual(left.value, 1)
-  assert.deepEqual(operator.value, '+')
-  assert.deepEqual(right.value, 2)
+  expect(arithmetic.type).toBe("function")
+  expect(arithmetic.value.name).toBe("func")
+  expect(left.value).toBe(1)
+  expect(operator.value).toBe('+')
+  expect(right.value).toBe(2)
 })
 
 test("exponents", () => {
   const result = parse("=1^2")?.[0] as ParsedFormula
 
-  const value = result.value as ParsedArithmetic
-  const left = value.operation.left as ParsedNumber
-  const operator = value.operation.operator
-  const right = value.operation.right as ParsedNumber
+  const arithmetic = result.value as ParsedArithmetic
+  const left = arithmetic.value.left as ParsedNumber
+  const operator = arithmetic.value.operator
+  const right = arithmetic.value.right as ParsedNumber
 
-  assert.deepEqual(left.value, 1)
-  assert.deepEqual(operator.value, '^')
-  assert.deepEqual(right.value, 2)
+  expect(left.value).toBe(1)
+  expect(operator.value).toBe('^')
+  expect(right.value).toBe(2)
 })
 
 test("functions with a nested function as param", () => {
@@ -177,30 +189,32 @@ test("functions with a nested function as param", () => {
   const identifier = value.value.params?.[0] as ParsedFunction
   const params = identifier.value.params?.[0] as ParsedNumber
 
-  assert.deepEqual(value.type, "function")
-  assert.deepEqual(identifier.value.name, "nested")
-  assert.deepEqual(params.value, 1)
+  expect(value.type).toBe("function")
+  expect(identifier.value.name).toBe("nested")
+  expect(params.value).toBe(1)
 })
 
 test("functions with multiple params", () => {
   const result = parse("=func_multiple(1, 2, 3)")?.[0] as ParsedFormula
   const value = result.value as ParsedFunction
-  assert.deepEqual(value.type, "function")
-  assert.deepEqual(value.value.params.length, 3)
-  assert.deepEqual(value.value.name, "func_multiple")
-  assert.deepEqual((value.value.params[0] as ParsedNumber).value, 1)
-  assert.deepEqual((value.value.params[1] as ParsedNumber).value, 2)
-  assert.deepEqual((value.value.params[2] as ParsedNumber).value, 3)
+
+  expect(value.type).toBe("function")
+  expect(value.value.params.length).toBe(3)
+  expect(value.value.name).toBe("func_multiple")
+  expect((value.value.params[0] as ParsedNumber).value).toBe(1)
+  expect((value.value.params[1] as ParsedNumber).value).toBe(2)
+  expect((value.value.params[2] as ParsedNumber).value).toBe(3)
 })
 
 test("functions with strings", () => {
   const result = parse("=func_multiple(\"param1\", 'param2')")?.[0] as ParsedFormula
   const value = result.value as ParsedFunction
-  assert.deepEqual(value.type, "function")
-  assert.deepEqual(value.value.params.length, 2)
-  assert.deepEqual(value.value.name, "func_multiple")
-  assert.deepEqual((value.value.params[0] as ParsedString).value, "param1")
-  assert.deepEqual((value.value.params[1] as ParsedString).value, "param2")
+
+  expect(value.type).toBe("function")
+  expect(value.value.params.length).toBe(2)
+  expect(value.value.name).toBe("func_multiple")
+  expect((value.value.params[0] as ParsedString).value).toBe("param1")
+  expect((value.value.params[1] as ParsedString).value).toBe("param2")
 
   expect(() => parse("=func_multiple(\"param1')")).toThrow()
   expect(() => parse("=func_multiple('param1\")")).toThrow()
@@ -209,11 +223,11 @@ test("functions with strings", () => {
 test("functions with boolean params", () => {
   const result = parse("=func_bool(true, false)")?.[0] as ParsedFormula
   const value = result.value as ParsedFunction
-  assert.deepEqual(value.type, "function")
-  assert.deepEqual(value.value.params.length, 2)
-  assert.deepEqual(value.value.name, "func_bool")
-  assert.deepEqual((value.value.params[0] as ParsedBoolean).value, true)
-  assert.deepEqual((value.value.params[1] as ParsedBoolean).value, false)
+  expect(value.type).toBe("function")
+  expect(value.value.params.length).toBe(2)
+  expect(value.value.name).toBe("func_bool")
+  expect((value.value.params[0] as ParsedBoolean).value).toBe(true)
+  expect((value.value.params[1] as ParsedBoolean).value).toBe(false)
 })
 
 test("functions with the kitchen sink thrown at it", () => {
@@ -228,8 +242,8 @@ test("functions with the kitchen sink thrown at it", () => {
     param6
   ] = parsedFunction.value.params as [ParsedFunction, ParsedNumber, ParsedArithmetic, ParsedFunction, ParsedString, ParsedBoolean]
 
-  const left = param3.operation.left as ParsedNumber
-  const right = param3.operation.right as ParsedNumber
+  const left = param3.value.left as ParsedNumber
+  const right = param3.value.right as ParsedNumber
 
   const [
     number1,
@@ -237,21 +251,21 @@ test("functions with the kitchen sink thrown at it", () => {
     string3
   ] = param4.value.params as [ParsedNumber, ParsedNumber, ParsedString]
 
-  assert.deepEqual(parsedFunction.type, "function")
-  assert.deepEqual(nest1.value.name, "nest1")
-  assert.deepEqual((nest1.value.params[0] as ParsedNumber).value, 100)
-  assert.deepEqual(param2.value, 2)
-  assert.deepEqual(left.value, 4)
-  assert.deepEqual(param3.operation.operator.value, "/")
-  assert.deepEqual(right.value, 2)
+  expect(parsedFunction.type).toBe("function")
+  expect(nest1.value.name).toBe("nest1")
+  expect((nest1.value.params[0] as ParsedNumber).value).toBe(100)
+  expect(param2.value).toBe(2)
+  expect(left.value).toBe(4)
+  expect(param3.value.operator.value).toBe("/")
+  expect(right.value).toBe(2)
 
-  assert.deepEqual(param4.value.name, "nest2")
-  assert.deepEqual(number1.value, 42)
-  assert.deepEqual(number2.value, 69)
-  assert.deepEqual(string3.value, 'nice')
+  expect(param4.value.name).toBe("nest2")
+  expect(number1.value).toBe(42)
+  expect(number2.value).toBe(69)
+  expect(string3.value).toBe('nice')
 
-  assert.deepEqual(param5.value, 'string')
-  assert.deepEqual(param6.value, true)
+  expect(param5.value).toBe('string')
+  expect(param6.value).toBe(true)
 })
 
 test("functions whitespace test", () => {
@@ -263,9 +277,9 @@ test("functions whitespace test", () => {
 
   const parsedFunction = result.value as ParsedFunction
 
-  assert.deepEqual(parsedFunction.type, "function")
-  assert.deepEqual(parsedFunction.value.name, "func_whitespace")
-  assert.deepEqual((parsedFunction.value.params[0] as ParsedNumber).value, 2)
+  expect(parsedFunction.type).toBe("function")
+  expect(parsedFunction.value.name).toBe("func_whitespace")
+  expect((parsedFunction.value.params[0] as ParsedNumber).value).toBe(2)
 })
 
 test("arithmetic whitespace test", () => {
@@ -276,15 +290,14 @@ test("arithmetic whitespace test", () => {
    `)?.[0] as ParsedFormula
 
   const parsedArithmetic = result.value as ParsedArithmetic
-  const { left: leftOperation, operator, right } = parsedArithmetic.operation as { left: ParsedArithmetic, operator: ParsedOperator, right: ParsedNumber }
+  const { left: leftOperation, operator, right } = parsedArithmetic.value as { left: ParsedArithmetic, operator: ParsedOperator, right: ParsedNumber }
 
+  expect((leftOperation.value.left as ParsedNumber).value).toBe(1)
+  expect(leftOperation.value.operator.value).toBe("/")
+  expect((leftOperation.value.right as ParsedNumber).value).toBe(4)
 
-  assert.deepEqual((leftOperation.operation.left as ParsedNumber).value, 1)
-  assert.deepEqual(leftOperation.operation.operator.value, "/")
-  assert.deepEqual((leftOperation.operation.right as ParsedNumber).value, 4)
-
-  assert.deepEqual(operator.value, "+")
-  assert.deepEqual(right.value, 2)
+  expect(operator.value).toBe("+")
+  expect(right.value).toBe(2)
 })
 
 test("references", () => {
@@ -294,8 +307,8 @@ test("references", () => {
 
   const parsedReference = result.value as ParsedReference
 
-  assert.deepEqual(parsedReference.type, "reference")
-  assert.deepEqual(parsedReference.value.identifier, "something")
+  expect(parsedReference.type).toBe("reference")
+  expect(parsedReference.value.identifier).toBe("something")
 })
 
 test("references in arithmetic", () => {
@@ -305,11 +318,11 @@ test("references in arithmetic", () => {
 
   const parsedReference = result.value as ParsedArithmetic
 
-  assert.deepEqual(parsedReference.type, "arithmetic")
-  assert.deepEqual(parsedReference.operation.left.type, "reference")
-  assert.deepEqual((parsedReference.operation.left as ParsedReference).value.identifier, "something")
-  assert.deepEqual(parsedReference.operation.operator.value, "+")
-  assert.deepEqual((parsedReference.operation.right as ParsedNumber).value, 1)
+  expect(parsedReference.type).toBe("arithmetic")
+  expect(parsedReference.value.left.type).toBe("reference")
+  expect((parsedReference.value.left as ParsedReference).value.identifier).toBe("something")
+  expect(parsedReference.value.operator.value).toBe("+")
+  expect((parsedReference.value.right as ParsedNumber).value).toBe(1)
 })
 
 test("references with sub identifiers", () => {
@@ -319,13 +332,13 @@ test("references with sub identifiers", () => {
   const parsedReference1 = result1.value as ParsedReference
   const parsedReference2 = result2.value as ParsedReference
 
-  assert.deepEqual(parsedReference1.type, "reference")
-  assert.deepEqual(parsedReference1.value.identifier, "something")
-  assert.deepEqual(parsedReference1.value.subpath, ["test"])
+  expect(parsedReference1.type).toBe("reference")
+  expect(parsedReference1.value.identifier).toBe("something")
+  expect(parsedReference1.value.subpath).toStrictEqual(["test"])
 
-  assert.deepEqual(parsedReference2.type, "reference")
-  assert.deepEqual(parsedReference2.value.identifier, "something")
-  assert.deepEqual(parsedReference2.value.subpath, ["test", "hello"])
+  expect(parsedReference2.type).toBe("reference")
+  expect(parsedReference2.value.identifier).toBe("something")
+  expect(parsedReference2.value.subpath).toStrictEqual(["test", "hello"])
 })
 
 test("references with array keys", () => {
@@ -335,13 +348,13 @@ test("references with array keys", () => {
   const parsedReference1 = result1.value as ParsedReference
   const parsedReference2 = result2.value as ParsedReference
 
-  assert.deepEqual(parsedReference1.type, "reference")
-  assert.deepEqual(parsedReference1.value.identifier, "something")
-  assert.deepEqual(parsedReference1.value.subpath, ['0', 'test', '123'])
+  expect(parsedReference1.type).toBe("reference")
+  expect(parsedReference1.value.identifier).toBe("something")
+  expect(parsedReference1.value.subpath).toStrictEqual(['0', 'test', '123'])
 
-  assert.deepEqual(parsedReference2.type, "reference")
-  assert.deepEqual(parsedReference2.value.identifier, "id")
-  assert.deepEqual(parsedReference2.value.subpath, ['test', '2', 'hello', "12"])
+  expect(parsedReference2.type, "reference")
+  expect(parsedReference2.value.identifier).toBe("id")
+  expect(parsedReference2.value.subpath).toStrictEqual(['test', '2', 'hello', "12"])
 })
 
 test("throw errors with invalid names", () => {

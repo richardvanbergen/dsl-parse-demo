@@ -5,7 +5,7 @@ import { LRLanguage, LanguageSupport, syntaxTree, language } from "@codemirror/l
 import { EditorState, Compartment } from "@codemirror/state"
 import { markdown } from "@codemirror/lang-markdown"
 import { linter, Diagnostic } from "@codemirror/lint"
-import { IncompleteInputError, parse } from "../../grammar/parser"
+import {IncompleteInputError, parse, ParsedFormula} from "../../grammar/parser"
 // @ts-expect-error no types
 import { parser } from "../../grammar/lezer.js"
 import { autocomplete } from "./autocomplete"
@@ -102,9 +102,20 @@ const autoLanguage = EditorState.transactionExtender.of(tr => {
   }
 })
 
-export function newEditor(element: HTMLElement, onUpdate: (value: string) => void) {
+export function newEditor(element: HTMLElement, updateHooks?: ((value?: ParsedFormula[]) => void)[]) {
   const updateListener = EditorView.updateListener.of(update => {
-    onUpdate(update.state.doc.toString())
+      if (updateHooks?.length) {
+        for (const hook of updateHooks) {
+          try {
+            const parsed = parse(update.state.doc.toString())
+            if (parsed?.length) {
+              hook(parsed)
+            }
+          } catch (e) {
+            hook()
+          }
+        }
+      }
   })
 
   new EditorView({

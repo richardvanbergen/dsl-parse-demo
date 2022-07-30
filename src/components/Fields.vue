@@ -18,7 +18,7 @@ function updateFocus(fieldName: string) {
   emits('focus-change', fieldName)
 }
 
-const handleUpdate = (fieldName: string, ast: ParsedFormula[] | undefined) => {
+const handleChange = (fieldName: string, ast: ParsedFormula[] | undefined) => {
   if (ast) {
     fieldStore.updateAst(fieldName, ast)
   }
@@ -42,7 +42,7 @@ document.addEventListener("click", (e) => {
 
 <template>
   <div class="flex flex-col gap-4">
-    <Field v-for="fieldName of Object.keys(Object.fromEntries(fields))" :name="fieldName" :has-focus="hasFocus(fieldName)" @update-ast="handleUpdate" @focus-change="updateFocus">
+    <Field v-for="fieldName of Object.keys(Object.fromEntries(fields))" :name="fieldName" :has-focus="hasFocus(fieldName)" @change="handleChange" @focus-change="updateFocus">
       {{ fieldName }}
     </Field>
 
