@@ -2,7 +2,6 @@
 import lexer from "./lexer"
 
 function arithmeticPost(data: any) {
-    const firstElement = data[0]
     return {
         ...data[0],
         type: 'arithmetic',
@@ -71,9 +70,8 @@ function referencePost(data: any) {
 
 @lexer lexer
 @preprocessor typescript
-@builtin "whitespace.ne"
 
-main -> _ value _ {% data => data[1] %}
+main -> %ws:* value %ws:* {% data => data[1] %}
 value -> formula
 
 formula -> formula_identifier boolean {% data => ({ ...data[0], value: data[1] }) %}
@@ -83,18 +81,18 @@ formula_identifier -> %formula {% id %}
 
 arithmetic -> addition_subtraction {% data => { return data[0] } %}
 
-addition_subtraction -> addition_subtraction _ plus _ multiplication_division {% arithmeticPost %}
-                      | addition_subtraction _ minus _ multiplication_division {% arithmeticPost %}
+addition_subtraction -> addition_subtraction %ws:* plus %ws:* multiplication_division {% arithmeticPost %}
+                      | addition_subtraction %ws:* minus %ws:* multiplication_division {% arithmeticPost %}
                       | multiplication_division {% id %}
 
-multiplication_division -> multiplication_division _ times _ exponent {% arithmeticPost %}
-                         | multiplication_division _ divide _ exponent {% arithmeticPost %}
+multiplication_division -> multiplication_division %ws:* times %ws:* exponent {% arithmeticPost %}
+                         | multiplication_division %ws:* divide %ws:* exponent {% arithmeticPost %}
                          | exponent {% id %}
 
-exponent -> parens _ exponent _ exponent {% arithmeticPost %}
+exponent -> parens %ws:* exponent %ws:* exponent {% arithmeticPost %}
           | parens {% id %}
 
-parens -> "(" _ arithmetic _ ")" {% data => data[2] %}
+parens -> "(" %ws:* arithmetic %ws:* ")" {% data => data[2] %}
         | number {% id %}
 
 plus -> %plus {% id %}
@@ -107,10 +105,10 @@ number -> %number {% numberPost %}
         | function {% id %}
         | reference {% id %}
 
-function -> identifier _ "(" _ parameter_list:* _ ")" {% functionPost %}
+function -> identifier %ws:* "(" %ws:* parameter_list:* %ws:* ")" {% functionPost %}
 
 parameter_list
-    -> function_param _ "," _ parameter_list {% functionParamPost %}
+    -> function_param %ws:* "," %ws:* parameter_list {% functionParamPost %}
      | function_param
 
 function_param -> arithmetic {% id %}

@@ -1,4 +1,5 @@
 import {
+  flatten,
   parse,
   ParsedArithmetic,
   ParsedBoolean,
@@ -13,8 +14,8 @@ import {
 import { expect, test } from 'vitest'
 
 test("parse false", () => {
-  const result = parse("=false") as ParsedFormula[]
-  const formula = result?.[0] as ParsedFormula
+  const result = parse("=false") as ParsedFormula
+  const formula = result as ParsedFormula
   const value = formula.value as ParsedBoolean
 
   expect(formula.type).toBe("formula")
@@ -23,8 +24,8 @@ test("parse false", () => {
 })
 
 test("parse true", () => {
-  const result = parse("=true") as ParsedFormula[]
-  const formula = result?.[0] as ParsedFormula
+  const result = parse("=true") as ParsedFormula
+  const formula = result as ParsedFormula
   const value = formula.value as ParsedBoolean
 
   expect(formula.type).toBe("formula")
@@ -33,13 +34,13 @@ test("parse true", () => {
 })
 
 test("parse numbers", () => {
-  const zero = parse("=0")?.[0] as ParsedFormula
+  const zero = parse("=0") as ParsedFormula
   const zValue = zero.value as ParsedNumber
-  const decimal = parse("=0.123")?.[0] as ParsedFormula
+  const decimal = parse("=0.123") as ParsedFormula
   const dValue = decimal.value as ParsedNumber
-  const minus = parse("=-1")?.[0] as ParsedFormula
+  const minus = parse("=-1") as ParsedFormula
   const mValue = minus.value as ParsedNumber
-  const big = parse("=1232893434")?.[0] as ParsedFormula
+  const big = parse("=1232893434") as ParsedFormula
   const bValue = big.value as ParsedNumber
 
   expect(zValue.type).toBe("number")
@@ -53,7 +54,7 @@ test("parse numbers", () => {
 })
 
 test("basic arithmetic", () => {
-  const result = parse("=1 + 1")?.[0] as ParsedFormula
+  const result = parse("=1 + 1") as ParsedFormula
 
   const arithmetic = result.value as ParsedArithmetic
   const left = arithmetic.value.left as ParsedNumber
@@ -66,7 +67,7 @@ test("basic arithmetic", () => {
 })
 
 test("multiplication order", () => {
-  const result = parse("=1 - 2 * 3")?.[0] as ParsedFormula
+  const result = parse("=1 - 2 * 3") as ParsedFormula
   const arithmetic = result.value as ParsedArithmetic
   const left = arithmetic.value.left as ParsedNumber
   const right = arithmetic.value.right as ParsedArithmetic
@@ -81,7 +82,7 @@ test("multiplication order", () => {
 })
 
 test("division order", () => {
-  const result = parse("=1 + 2 - 3 / 4")?.[0] as ParsedFormula
+  const result = parse("=1 + 2 - 3 / 4") as ParsedFormula
   const arithmetic = result.value as ParsedArithmetic
   const left = arithmetic.value.left as ParsedArithmetic
   const operator = arithmetic.value.operator
@@ -105,7 +106,7 @@ test("division order", () => {
 })
 
 test("parse addition", () => {
-  const result = parse("=1 + 2 - 3")?.[0] as ParsedFormula
+  const result = parse("=1 + 2 - 3") as ParsedFormula
   const arithmetic = result.value as ParsedArithmetic
   const left = arithmetic.value.left as ParsedArithmetic
   const right = arithmetic.value.right as ParsedNumber
@@ -122,7 +123,7 @@ test("parse addition", () => {
 })
 
 test("parse parens", () => {
-  const result = parse("=1 + (2 - 3)")?.[0] as ParsedFormula
+  const result = parse("=1 + (2 - 3)") as ParsedFormula
   const arithmetic = result.value as ParsedArithmetic
   const left = arithmetic.value.left as ParsedNumber
   const right = arithmetic.value.right as ParsedArithmetic
@@ -138,7 +139,7 @@ test("parse parens", () => {
 })
 
 test("functions", () => {
-  const result = parse("=func()")?.[0] as ParsedFormula
+  const result = parse("=func()") as ParsedFormula
   const value = result.value as ParsedFunction
 
   expect(value.type).toBe("function")
@@ -146,7 +147,7 @@ test("functions", () => {
 })
 
 test("functions with a parameter", () => {
-  const result = parse("=func_single(1)")?.[0] as ParsedFormula
+  const result = parse("=func_single(1)") as ParsedFormula
 
   const value = result.value as ParsedFunction
   const number = value.value.params?.[0] as ParsedNumber
@@ -156,7 +157,7 @@ test("functions with a parameter", () => {
 })
 
 test("functions with a parameter sum", () => {
-  const result = parse("=func(1 + 2)")?.[0] as ParsedFormula
+  const result = parse("=func(1 + 2)") as ParsedFormula
   const arithmetic = result.value as ParsedFunction
   const sum = arithmetic.value.params?.[0] as ParsedArithmetic
   const left = sum.value.left as ParsedNumber
@@ -171,7 +172,7 @@ test("functions with a parameter sum", () => {
 })
 
 test("exponents", () => {
-  const result = parse("=1^2")?.[0] as ParsedFormula
+  const result = parse("=1^2") as ParsedFormula
 
   const arithmetic = result.value as ParsedArithmetic
   const left = arithmetic.value.left as ParsedNumber
@@ -184,7 +185,7 @@ test("exponents", () => {
 })
 
 test("functions with a nested function as param", () => {
-  const result = parse("=func(nested(1))")?.[0] as ParsedFormula
+  const result = parse("=func(nested(1))") as ParsedFormula
   const value = result.value as ParsedFunction
   const identifier = value.value.params?.[0] as ParsedFunction
   const params = identifier.value.params?.[0] as ParsedNumber
@@ -195,7 +196,7 @@ test("functions with a nested function as param", () => {
 })
 
 test("functions with multiple params", () => {
-  const result = parse("=func_multiple(1, 2, 3)")?.[0] as ParsedFormula
+  const result = parse("=func_multiple(1, 2, 3)") as ParsedFormula
   const value = result.value as ParsedFunction
 
   expect(value.type).toBe("function")
@@ -207,7 +208,7 @@ test("functions with multiple params", () => {
 })
 
 test("functions with strings", () => {
-  const result = parse("=func_multiple(\"param1\", 'param2')")?.[0] as ParsedFormula
+  const result = parse('=func_multiple("param1", "param2")') as ParsedFormula
   const value = result.value as ParsedFunction
 
   expect(value.type).toBe("function")
@@ -215,13 +216,35 @@ test("functions with strings", () => {
   expect(value.value.name).toBe("func_multiple")
   expect((value.value.params[0] as ParsedString).value).toBe("param1")
   expect((value.value.params[1] as ParsedString).value).toBe("param2")
+})
 
-  expect(() => parse("=func_multiple(\"param1')")).toThrow()
-  expect(() => parse("=func_multiple('param1\")")).toThrow()
+test("functions with strings and spaces in them", () => {
+  const result = parse('=func_multiple("test me")') as ParsedFormula
+  const value = result.value as ParsedFunction
+
+  expect(value.type).toBe("function")
+  expect(value.value.params.length).toBe(1)
+  expect(value.value.name).toBe("func_multiple")
+  expect((value.value.params[0] as ParsedString).value).toBe("test me")
+})
+
+test("functions with single quotes", () => {
+  const result = parse(`=func_multiple('test me')`) as ParsedFormula
+  const value = result.value as ParsedFunction
+
+  expect(value.type).toBe("function")
+  expect(value.value.params.length).toBe(1)
+  expect(value.value.name).toBe("func_multiple")
+  expect((value.value.params[0] as ParsedString).value).toBe("test me")
+})
+
+test("disallow mixed quotes", () => {
+  expect(() => parse(`=func_multiple('test me")`)).toThrowError()
+  expect(() => parse(`=func_multiple("test me')`)).toThrowError()
 })
 
 test("functions with boolean params", () => {
-  const result = parse("=func_bool(true, false)")?.[0] as ParsedFormula
+  const result = parse("=func_bool(true, false)") as ParsedFormula
   const value = result.value as ParsedFunction
   expect(value.type).toBe("function")
   expect(value.value.params.length).toBe(2)
@@ -231,7 +254,7 @@ test("functions with boolean params", () => {
 })
 
 test("functions with the kitchen sink thrown at it", () => {
-  const result = parse("=func_party(nest1(100), 2, 4 / 2, nest2(42, 69, 'nice'), 'string', true)")?.[0] as ParsedFormula
+  const result = parse('=func_party(nest1(100), 2, 4 / 2, nest2(42, 69, "nice"), "string", true)') as ParsedFormula
   const parsedFunction = result.value as ParsedFunction
   const [
     nest1,
@@ -273,7 +296,7 @@ test("functions whitespace test", () => {
       =func_whitespace(
         2
       )
-   `)?.[0] as ParsedFormula
+   `) as ParsedFormula
 
   const parsedFunction = result.value as ParsedFunction
 
@@ -287,7 +310,7 @@ test("arithmetic whitespace test", () => {
       =1
       / 4
       + 2
-   `)?.[0] as ParsedFormula
+   `) as ParsedFormula
 
   const parsedArithmetic = result.value as ParsedArithmetic
   const { left: leftOperation, operator, right } = parsedArithmetic.value as { left: ParsedArithmetic, operator: ParsedOperator, right: ParsedNumber }
@@ -303,7 +326,7 @@ test("arithmetic whitespace test", () => {
 test("references", () => {
   const result = parse(`
       =$something
-   `)?.[0] as ParsedFormula
+   `) as ParsedFormula
 
   const parsedReference = result.value as ParsedReference
 
@@ -314,7 +337,7 @@ test("references", () => {
 test("references in arithmetic", () => {
   const result = parse(`
       =$something + 1
-   `)?.[0] as ParsedFormula
+   `) as ParsedFormula
 
   const parsedReference = result.value as ParsedArithmetic
 
@@ -326,8 +349,8 @@ test("references in arithmetic", () => {
 })
 
 test("references with sub identifiers", () => {
-  const result1 = parse(`=$something.test`)?.[0] as ParsedFormula
-  const result2 = parse(`=$something.test.hello`)?.[0] as ParsedFormula
+  const result1 = parse(`=$something.test`) as ParsedFormula
+  const result2 = parse(`=$something.test.hello`) as ParsedFormula
 
   const parsedReference1 = result1.value as ParsedReference
   const parsedReference2 = result2.value as ParsedReference
@@ -342,8 +365,8 @@ test("references with sub identifiers", () => {
 })
 
 test("references with array keys", () => {
-  const result1 = parse(`=$something[0].test[123]`)?.[0] as ParsedFormula
-  const result2 = parse(`=$id.test[2].hello[12]`)?.[0] as ParsedFormula
+  const result1 = parse(`=$something[0].test[123]`) as ParsedFormula
+  const result2 = parse(`=$id.test[2].hello[12]`) as ParsedFormula
 
   const parsedReference1 = result1.value as ParsedReference
   const parsedReference2 = result2.value as ParsedReference
@@ -363,4 +386,36 @@ test("throw errors with invalid names", () => {
   expect(() => parse(`=$s.2test`)).toThrow()
   expect(() => parse(`=$_.te%t`)).toThrow()
   expect(() => parse(`=$s.test.8`)).toThrow()
+})
+
+test("can flatten ast", () => {
+  const ast = parse('=1 + 2') as ParsedFormula
+  const [...flat] = flatten(ast)
+
+  expect((flat[0] as ParsedFormula).type).toBe("formula")
+  expect((flat[1] as ParsedArithmetic).type).toBe("arithmetic")
+  expect((flat[2] as ParsedNumber).value).toBe(1)
+  expect((flat[3] as ParsedOperator).value).toBe("+")
+  expect((flat[4] as ParsedNumber).value).toBe(2)
+})
+
+test("can flatten more complex ast", () => {
+  const ast = parse('=1 + 2 - MAX(4, 5 + $reference.subpath)') as ParsedFormula
+  const [...flat] = flatten(ast)
+
+  expect((flat[0] as ParsedFormula).type).toBe("formula")
+  expect((flat[1] as ParsedArithmetic).type).toBe("arithmetic")
+  expect((flat[2] as ParsedArithmetic).type).toBe("arithmetic")
+  expect((flat[3] as ParsedNumber).value).toBe(1)
+  expect((flat[4] as ParsedOperator).value).toBe("+")
+  expect((flat[5] as ParsedNumber).value).toBe(2)
+  expect((flat[6] as ParsedOperator).value).toBe('-')
+  expect((flat[7] as ParsedFunction).value.name).toBe('MAX')
+  expect((flat[8] as ParsedNumber).value).toBe(4)
+  expect((flat[9] as ParsedArithmetic).type).toBe('arithmetic')
+  expect((flat[10] as ParsedNumber).value).toBe(5)
+  expect((flat[11] as ParsedOperator).value).toBe('+')
+  expect((flat[12] as ParsedReference).value.identifier).toBe('reference')
+  expect((flat[12] as ParsedReference).value.subpath[0]).toBe('subpath')
+  expect((flat[12] as ParsedReference).value.subpath.length).toBe(1)
 })

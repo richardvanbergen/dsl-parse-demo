@@ -18,7 +18,7 @@ function updateFocus(fieldName: string) {
   emits('focus-change', fieldName)
 }
 
-const handleChange = (fieldName: string, ast: ParsedFormula[] | undefined) => {
+const handleChange = (fieldName: string, ast: ParsedFormula | undefined) => {
   if (ast) {
     fieldStore.updateAst(fieldName, ast)
   }

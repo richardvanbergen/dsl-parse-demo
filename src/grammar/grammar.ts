@@ -3,6 +3,7 @@
 // Bypasses TS6133. Allow declared but unused functions.
 // @ts-ignore
 function id(d: any[]): any { return d[0]; }
+declare var ws: any;
 declare var formula: any;
 declare var plus: any;
 declare var minus: any;
@@ -86,7 +87,7 @@ function referencePost(data: any) {
 interface NearleyToken {
   value: any;
   [key: string]: any;
-}
+};
 
 interface NearleyLexer {
   reset: (chunk: string, info: any) => void;
@@ -113,28 +114,49 @@ interface Grammar {
 const grammar: Grammar = {
   Lexer: lexer,
   ParserRules: [
-    {"name": "_$ebnf$1", "symbols": []},
-    {"name": "_$ebnf$1", "symbols": ["_$ebnf$1", "wschar"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "_", "symbols": ["_$ebnf$1"], "postprocess": function(d) {return null;}},
-    {"name": "__$ebnf$1", "symbols": ["wschar"]},
-    {"name": "__$ebnf$1", "symbols": ["__$ebnf$1", "wschar"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "__", "symbols": ["__$ebnf$1"], "postprocess": function(d) {return null;}},
-    {"name": "wschar", "symbols": [/[ \t\n\v\f]/], "postprocess": id},
-    {"name": "main", "symbols": ["_", "value", "_"], "postprocess": data => data[1]},
+    {"name": "main$ebnf$1", "symbols": []},
+    {"name": "main$ebnf$1", "symbols": ["main$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "main$ebnf$2", "symbols": []},
+    {"name": "main$ebnf$2", "symbols": ["main$ebnf$2", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "main", "symbols": ["main$ebnf$1", "value", "main$ebnf$2"], "postprocess": data => data[1]},
     {"name": "value", "symbols": ["formula"]},
     {"name": "formula", "symbols": ["formula_identifier", "boolean"], "postprocess": data => ({ ...data[0], value: data[1] })},
     {"name": "formula", "symbols": ["formula_identifier", "arithmetic"], "postprocess": data => ({ ...data[0], value: data[1] })},
     {"name": "formula_identifier", "symbols": [(lexer.has("formula") ? {type: "formula"} : formula)], "postprocess": id},
     {"name": "arithmetic", "symbols": ["addition_subtraction"], "postprocess": data => { return data[0] }},
-    {"name": "addition_subtraction", "symbols": ["addition_subtraction", "_", "plus", "_", "multiplication_division"], "postprocess": arithmeticPost},
-    {"name": "addition_subtraction", "symbols": ["addition_subtraction", "_", "minus", "_", "multiplication_division"], "postprocess": arithmeticPost},
+    {"name": "addition_subtraction$ebnf$1", "symbols": []},
+    {"name": "addition_subtraction$ebnf$1", "symbols": ["addition_subtraction$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "addition_subtraction$ebnf$2", "symbols": []},
+    {"name": "addition_subtraction$ebnf$2", "symbols": ["addition_subtraction$ebnf$2", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "addition_subtraction", "symbols": ["addition_subtraction", "addition_subtraction$ebnf$1", "plus", "addition_subtraction$ebnf$2", "multiplication_division"], "postprocess": arithmeticPost},
+    {"name": "addition_subtraction$ebnf$3", "symbols": []},
+    {"name": "addition_subtraction$ebnf$3", "symbols": ["addition_subtraction$ebnf$3", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "addition_subtraction$ebnf$4", "symbols": []},
+    {"name": "addition_subtraction$ebnf$4", "symbols": ["addition_subtraction$ebnf$4", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "addition_subtraction", "symbols": ["addition_subtraction", "addition_subtraction$ebnf$3", "minus", "addition_subtraction$ebnf$4", "multiplication_division"], "postprocess": arithmeticPost},
     {"name": "addition_subtraction", "symbols": ["multiplication_division"], "postprocess": id},
-    {"name": "multiplication_division", "symbols": ["multiplication_division", "_", "times", "_", "exponent"], "postprocess": arithmeticPost},
-    {"name": "multiplication_division", "symbols": ["multiplication_division", "_", "divide", "_", "exponent"], "postprocess": arithmeticPost},
+    {"name": "multiplication_division$ebnf$1", "symbols": []},
+    {"name": "multiplication_division$ebnf$1", "symbols": ["multiplication_division$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "multiplication_division$ebnf$2", "symbols": []},
+    {"name": "multiplication_division$ebnf$2", "symbols": ["multiplication_division$ebnf$2", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "multiplication_division", "symbols": ["multiplication_division", "multiplication_division$ebnf$1", "times", "multiplication_division$ebnf$2", "exponent"], "postprocess": arithmeticPost},
+    {"name": "multiplication_division$ebnf$3", "symbols": []},
+    {"name": "multiplication_division$ebnf$3", "symbols": ["multiplication_division$ebnf$3", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "multiplication_division$ebnf$4", "symbols": []},
+    {"name": "multiplication_division$ebnf$4", "symbols": ["multiplication_division$ebnf$4", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "multiplication_division", "symbols": ["multiplication_division", "multiplication_division$ebnf$3", "divide", "multiplication_division$ebnf$4", "exponent"], "postprocess": arithmeticPost},
     {"name": "multiplication_division", "symbols": ["exponent"], "postprocess": id},
-    {"name": "exponent", "symbols": ["parens", "_", "exponent", "_", "exponent"], "postprocess": arithmeticPost},
+    {"name": "exponent$ebnf$1", "symbols": []},
+    {"name": "exponent$ebnf$1", "symbols": ["exponent$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "exponent$ebnf$2", "symbols": []},
+    {"name": "exponent$ebnf$2", "symbols": ["exponent$ebnf$2", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "exponent", "symbols": ["parens", "exponent$ebnf$1", "exponent", "exponent$ebnf$2", "exponent"], "postprocess": arithmeticPost},
     {"name": "exponent", "symbols": ["parens"], "postprocess": id},
-    {"name": "parens", "symbols": [{"literal":"("}, "_", "arithmetic", "_", {"literal":")"}], "postprocess": data => data[2]},
+    {"name": "parens$ebnf$1", "symbols": []},
+    {"name": "parens$ebnf$1", "symbols": ["parens$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "parens$ebnf$2", "symbols": []},
+    {"name": "parens$ebnf$2", "symbols": ["parens$ebnf$2", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "parens", "symbols": [{"literal":"("}, "parens$ebnf$1", "arithmetic", "parens$ebnf$2", {"literal":")"}], "postprocess": data => data[2]},
     {"name": "parens", "symbols": ["number"], "postprocess": id},
     {"name": "plus", "symbols": [(lexer.has("plus") ? {type: "plus"} : plus)], "postprocess": id},
     {"name": "minus", "symbols": [(lexer.has("minus") ? {type: "minus"} : minus)], "postprocess": id},
@@ -145,9 +167,19 @@ const grammar: Grammar = {
     {"name": "number", "symbols": ["function"], "postprocess": id},
     {"name": "number", "symbols": ["reference"], "postprocess": id},
     {"name": "function$ebnf$1", "symbols": []},
-    {"name": "function$ebnf$1", "symbols": ["function$ebnf$1", "parameter_list"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "function", "symbols": ["identifier", "_", {"literal":"("}, "_", "function$ebnf$1", "_", {"literal":")"}], "postprocess": functionPost},
-    {"name": "parameter_list", "symbols": ["function_param", "_", {"literal":","}, "_", "parameter_list"], "postprocess": functionParamPost},
+    {"name": "function$ebnf$1", "symbols": ["function$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "function$ebnf$2", "symbols": []},
+    {"name": "function$ebnf$2", "symbols": ["function$ebnf$2", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "function$ebnf$3", "symbols": []},
+    {"name": "function$ebnf$3", "symbols": ["function$ebnf$3", "parameter_list"], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "function$ebnf$4", "symbols": []},
+    {"name": "function$ebnf$4", "symbols": ["function$ebnf$4", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "function", "symbols": ["identifier", "function$ebnf$1", {"literal":"("}, "function$ebnf$2", "function$ebnf$3", "function$ebnf$4", {"literal":")"}], "postprocess": functionPost},
+    {"name": "parameter_list$ebnf$1", "symbols": []},
+    {"name": "parameter_list$ebnf$1", "symbols": ["parameter_list$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "parameter_list$ebnf$2", "symbols": []},
+    {"name": "parameter_list$ebnf$2", "symbols": ["parameter_list$ebnf$2", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "parameter_list", "symbols": ["function_param", "parameter_list$ebnf$1", {"literal":","}, "parameter_list$ebnf$2", "parameter_list"], "postprocess": functionParamPost},
     {"name": "parameter_list", "symbols": ["function_param"]},
     {"name": "function_param", "symbols": ["arithmetic"], "postprocess": id},
     {"name": "function_param", "symbols": ["boolean"], "postprocess": id},

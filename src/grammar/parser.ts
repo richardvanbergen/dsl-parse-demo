@@ -2,8 +2,10 @@
 import {Grammar, Parser} from "nearley"
 import grammar from "./grammar"
 
+export type GrammarType = 'boolean' | 'number' | 'formula' | 'function' | 'arithmetic' | 'plus' | 'minus' | 'times' | 'divide' | 'string' | 'reference'
+
 export interface ParsedGrammar {
-  type: 'boolean' | 'number' | 'formula' | 'function' | 'arithmetic' | 'plus' | 'minus' | 'times' | 'divide' | 'string' | 'reference'
+  type: GrammarType
   value: unknown
   text: string
   offset: number
@@ -85,18 +87,12 @@ export interface ParsedFormula extends ParsedGrammar {
   value: ParsedArithmetic | ParsedBoolean | ParsedNumber | ParsedFunction | ParsedReference
 }
 
-export type Parsed = ParsedFormula
-
-export function isFormula(value: ParsedGrammar): value is ParsedFormula {
-  return value.type === 'formula'
+export function isGrammarType<T extends ParsedGrammar>(value: ParsedGrammar, type: GrammarType): value is T {
+  return value.type === type
 }
 
-export function isFunction(value: ParsedGrammar): value is ParsedFunction {
-  return value.type === 'function'
-}
-
-export function isReference(value: ParsedGrammar): value is ParsedReference {
-  return value.type === 'reference'
+export function isPrimitive(value: ParsedGrammar) {
+  return ['number', 'string', 'divide', 'times', 'plus', 'minus'].includes(value.type)
 }
 
 export class IncompleteInputError extends Error {}
@@ -114,6 +110,39 @@ export function parse(input: string) {
       throw new IncompleteInputError("Syntax error. Unexpected end of input.")
     }
 
-    return results?.[0] as Parsed[]
+    if (isGrammarType<ParsedFormula>(results?.[0]?.[0], 'formula')) {
+      return results[0][0]
+    }
+
+    throw new Error(`If you see this, please report a bug to the parser library with this input: ${input}`)
+  }
+}
+
+export function *flatten(ast: ParsedGrammar): IterableIterator<ParsedGrammar> {
+  const isArithmetic = isGrammarType<ParsedArithmetic>(ast, 'arithmetic')
+  const isFormula = isGrammarType<ParsedFormula>(ast, 'formula')
+  const isFunction = isGrammarType<ParsedFunction>(ast, 'function')
+
+  if (isFormula) {
+    yield ast
+    yield* flatten(ast.value)
+  }
+
+  if (isArithmetic) {
+    yield ast
+    yield* flatten(ast.value.left)
+    yield ast.value.operator
+    yield* flatten(ast.value.right)
+  }
+
+  if (isFunction) {
+    yield ast
+    for (const param of ast.value.params) {
+      yield* flatten(param)
+    }
+  }
+
+  if (!isFormula && !isArithmetic && !isFunction) {
+    yield ast as ParsedGrammar
   }
 }

@@ -30,16 +30,12 @@
       </div>
     </div>
 
-    <div class="p-6 bg-white col-span-1 row-span-1 gap-4 drop-shadow-lg">
-      <slot name="right-1" />
-    </div>
-
-    <div class="p-6 bg-white col-span-1 row-span-1 gap-4 drop-shadow-lg">
-      <slot name="right-2" />
-    </div>
-
-    <div class="p-6 bg-white col-span-1 row-span-1 gap-4 drop-shadow-lg">
-      <slot name="right-3" />
+    <div class="h-full overflow-y-auto overflow-x-visible">
+      <div class="bg-white shadow overflow-hidden rounded-md">
+        <div class="divide-y divide-gray-200">
+          <slot name="right" />
+        </div>
+      </div>
     </div>
   </div>
 </template>

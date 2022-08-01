@@ -1,91 +1,82 @@
-import { assert, expect, test } from 'vitest'
+import { expect, test } from 'vitest'
 import lexer from "./lexer"
 
 test("can lex booleans", () =>
 {
   const trueBool = lexer.reset("true").next()
-  assert.deepEqual(
-    trueBool?.text,
-    "true"
-  )
-
-  assert.deepEqual(
-    trueBool?.type,
-    "boolean"
-  )
+  expect(trueBool?.text).toBe("true")
+  expect(trueBool?.type).toBe("boolean")
 
   const falseBool = lexer.reset("false").next()
-  assert.deepEqual(
-    falseBool?.text,
-    "false"
-  )
+  expect(falseBool?.text).toBe("false")
 
-  assert.deepEqual(
-    falseBool?.type,
-    "boolean"
-  )
+  expect(falseBool?.type).toBe("boolean")
 })
 
 test("can lex a formula", () => {
   const result = lexer.reset(`=`).next()
-  assert.deepEqual(result?.type, 'formula')
+  expect(result?.type).toBe('formula')
+})
+
+test("can whitespace", () => {
+  const result = lexer.reset(` `).next()
+  expect(result?.type).toBe('ws')
+})
+
+test("can newline", () => {
+  const result = lexer.reset(`
+  `).next()
+  expect(result?.type).toBe('ws')
 })
 
 test("can match numbers", () => {
   const int = lexer.reset(`123`).next()
-  assert.deepEqual(int?.type, 'number')
+  expect(int?.type).toBe('number')
 
   const zero = lexer.reset(`123`).next()
-  assert.deepEqual(zero?.type, 'number')
+  expect(zero?.type).toBe('number')
 
   const decimal = lexer.reset(`123.4`).next()
-  assert.deepEqual(decimal?.type, 'number')
+  expect(decimal?.type).toBe('number')
 
   const decimalMinus = lexer.reset(`-123.4`).next()
-  assert.deepEqual(decimalMinus?.type, 'number')
+  expect(decimalMinus?.type).toBe('number')
 
   const zeroSingleDigit = lexer.reset(`0`).next()
-  assert.deepEqual(zeroSingleDigit?.type, 'number')
+  expect(zeroSingleDigit?.type).toBe('number')
 
   const zeroWithMinusOperator = lexer.reset(`-0`).next()
-  assert.deepEqual(zeroWithMinusOperator?.type, 'number')
+  expect(zeroWithMinusOperator?.type).toBe('number')
 
   const minusOne = lexer.reset(`-1`).next()
-  assert.deepEqual(minusOne?.type, 'number')
+  expect(minusOne?.type).toBe('number')
 
   const oneSingleDigit = lexer.reset(`1`).next()
-  assert.deepEqual(oneSingleDigit?.type, 'number')
+  expect(oneSingleDigit?.type).toBe('number')
 })
 
 test("can match addition", () => {
   const result = lexer.reset(`+`).next()
-  assert.deepEqual(result?.type, 'plus')
+  expect(result?.type).toBe('plus')
 })
 
 test("can match subtraction", () => {
   const result = lexer.reset(`-`).next()
-  assert.deepEqual(result?.type, 'minus')
+  expect(result?.type).toBe('minus')
 })
 
 test("can match multiplication", () => {
   const result = lexer.reset(`*`).next()
-  assert.deepEqual(result?.type, 'times')
+  expect(result?.type).toBe('times')
 })
 
 test("can match division", () => {
   const result = lexer.reset(`/`).next()
-  assert.deepEqual(result?.type, 'divide')
+  expect(result?.type).toBe('divide')
 })
 
 test("can match identifier", () => {
   const result = lexer.reset(`FuNcTiOn`).next()
-  assert.deepEqual(result?.type, 'identifier')
+  expect(result?.type).toBe('identifier')
 })
 
-test("can have strings as either single or double quotes but not mixed", () => {
-  const double = lexer.reset(`"my string"`).next()
-  assert.deepEqual(double?.type, 'string')
-  const single = lexer.reset(`'my string'`).next()
-  assert.deepEqual(single?.type, 'string')
-  expect(() => lexer.reset(`"my string'`).next()).toThrow(/invalid syntax at line 1 col 1/)
-})

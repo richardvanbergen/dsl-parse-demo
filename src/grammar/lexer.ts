@@ -2,8 +2,8 @@
 import moo from "moo"
 
 const lexer = moo.compile({
-  WS:        /[ \t]+/,
-  number:    /-?\d+\.?\d*/,
+  ws:         { match: /\s/, lineBreaks: true },
+  number:     /-?\d+\.?\d*/,
   string: [
     // @ts-expect-error no types
     { match: /"""[^]*?"""/, lineBreaks: true, value: x => x.slice(3, -3) },
@@ -25,7 +25,6 @@ const lexer = moo.compile({
   separator:  ',',
   boolean:    ['true', 'false'],
   identifier: /[a-zA-Z][a-zA-Z_0-9]*/,
-  NL:         { match: /\n/, lineBreaks: true },
 })
 
 export default lexer

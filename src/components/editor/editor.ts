@@ -102,16 +102,17 @@ const autoLanguage = EditorState.transactionExtender.of(tr => {
   }
 })
 
-export function newEditor(element: HTMLElement, updateHooks?: ((value?: ParsedFormula[]) => void)[]) {
+export function newEditor(element: HTMLElement, updateHooks?: ((value?: ParsedFormula) => void)[]) {
   const updateListener = EditorView.updateListener.of(update => {
       if (updateHooks?.length) {
         for (const hook of updateHooks) {
           try {
             const parsed = parse(update.state.doc.toString())
-            if (parsed?.length) {
+            if (parsed) {
               hook(parsed)
             }
           } catch (e) {
+            console.warn(e)
             hook()
           }
         }
