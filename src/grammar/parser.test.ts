@@ -419,3 +419,4 @@ test("can flatten more complex ast", () => {
   expect((flat[12] as ParsedReference).value.subpath[0]).toBe('subpath')
   expect((flat[12] as ParsedReference).value.subpath.length).toBe(1)
 })
+

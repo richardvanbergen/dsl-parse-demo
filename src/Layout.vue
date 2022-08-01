@@ -30,12 +30,8 @@
       </div>
     </div>
 
-    <div class="h-full overflow-y-auto overflow-x-visible">
-      <div class="bg-white shadow overflow-hidden rounded-md">
-        <div class="divide-y divide-gray-200">
-          <slot name="right" />
-        </div>
-      </div>
+    <div class="h-full overflow-y-auto overflow-x-visible flex flex-col gap-4 row-span-3">
+      <slot name="right" />
     </div>
   </div>
 </template>

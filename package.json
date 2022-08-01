@@ -17,6 +17,7 @@
     "@tailwindcss/typography": "^0.5.4",
     "codemirror": "^6.0.1",
     "lodash": "^4.17.21",
+    "mathjs": "^11.0.1",
     "moo": "^0.5.1",
     "nearley": "^2.20.1",
     "pinia": "^2.0.17",

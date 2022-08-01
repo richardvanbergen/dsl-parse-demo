@@ -1,5 +1,6 @@
-import {acceptHMRUpdate, defineStore} from "pinia";
-import {flatten, GrammarType, ParsedFormula, ParsedGrammar} from "../grammar/parser";
+import { acceptHMRUpdate, defineStore } from "pinia"
+import { flatten, GrammarType, ParsedFormula, ParsedGrammar } from "../grammar/parser"
+import { compileFormula } from "../grammar/compile"
 
 export const useFieldStore = defineStore('fieldStore', {
   state: () => ({
@@ -8,6 +9,14 @@ export const useFieldStore = defineStore('fieldStore', {
     fields: new Map<string, ParsedFormula | null>(),
   }),
   getters: {
+    compiledOutput: function(): string {
+      const ast = this.fieldAst
+      if (ast) {
+        return compileFormula(ast)
+      }
+
+      return ""
+    },
     categorizedNodes: function(): Map<GrammarType, ParsedGrammar[]> {
       return this.nodeList.reduce((acc, node) => {
         const values = acc.get(node.type) ?? []
@@ -23,8 +32,8 @@ export const useFieldStore = defineStore('fieldStore', {
       return []
     },
     fieldAst(state) {
-      return Object.fromEntries(state.fields)?.[state.focusedField]
-    }
+      return state.fields.get(state.focusedField)
+    },
   },
   actions: {
     setFocusedField(field: string) {
