@@ -9,13 +9,13 @@ Arithmetic {
 }
 
 Value {
-    Number | Function | Reference | Group | String | Boolean
+    Number | Function | Reference | Group | Boolean
 }
 
 Function { Identifier ParenLeft commaSep<Parameter> ParenRight }
 
 Parameter {
-    Arithmetic
+    Arithmetic | String
 }
 
 Group {

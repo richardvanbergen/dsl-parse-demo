@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { storeToRefs } from "pinia";
-import { isPrimitive, isGrammarType, ParsedFunction, ParsedReference, ParsedGrammar } from "../grammar/parser";
-import {useFieldStore} from "../stores/useFieldStore";
+import { storeToRefs } from "pinia"
+import { isPrimitive, isGrammarType, ParsedFunction, ParsedReference, ParsedGrammar } from "../grammar/parser"
+import { compileReference } from "../grammar/compile"
+import {useFieldStore} from "../stores/useFieldStore"
 
 const fieldStore = useFieldStore()
 const { categorizedNodes } = storeToRefs(fieldStore)
@@ -12,15 +13,6 @@ function isParsedFunction(node: ParsedGrammar): node is ParsedFunction {
 
 function isParsedReference(node: ParsedGrammar): node is ParsedReference {
   return isGrammarType<ParsedReference>(node, 'reference')
-}
-
-function referenceNodeToString(reference: ParsedReference) {
-  let combine = [reference.value.identifier]
-  if (reference.value.subpath && reference.value.subpath.length > 0) {
-    combine = [...combine, ...reference.value.subpath]
-  }
-
-  return combine
 }
 </script>
 
@@ -49,7 +41,7 @@ function referenceNodeToString(reference: ParsedReference) {
                 </li>
 
                 <li v-if="isParsedReference(node)">
-                  {{ referenceNodeToString(node) }}
+                  {{ compileReference(node) }}
                 </li>
               </template>
             </ul>

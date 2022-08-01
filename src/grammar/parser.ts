@@ -2,9 +2,10 @@
 import {Grammar, Parser} from "nearley"
 import grammar from "./grammar"
 
-export type GrammarType = 'boolean' | 'number' | 'formula' | 'function' | 'arithmetic' | 'plus' | 'minus' | 'times' | 'divide' | 'string' | 'reference'
+export type GrammarPrimitive = 'boolean' | 'number'  | 'plus' | 'minus' | 'times' | 'divide' | 'string'
+export type GrammarType =  'formula' | 'function' | 'arithmetic' | 'reference' | GrammarPrimitive
 
-export interface ParsedGrammar {
+export interface ParsedGrammar extends ParsedReference {
   type: GrammarType
   value: unknown
   text: string
@@ -14,37 +15,41 @@ export interface ParsedGrammar {
   col: number
 }
 
-export interface ParsedBoolean extends ParsedGrammar {
+export interface ParsedPrimitive extends ParsedGrammar {
+  type: GrammarPrimitive
+}
+
+export interface ParsedBoolean extends ParsedPrimitive {
   type: 'boolean'
   value: boolean
 }
 
-export interface ParsedNumber extends ParsedGrammar {
+export interface ParsedNumber extends ParsedPrimitive {
   type: 'number'
   value: number
 }
 
-export interface ParsedPlus extends ParsedGrammar {
-  type: 'number'
+export interface ParsedPlus extends ParsedPrimitive {
+  type: 'plus'
   value: '+'
 }
 
-export interface ParsedMinus extends ParsedGrammar {
+export interface ParsedMinus extends ParsedPrimitive {
   type: 'minus'
   value: '-'
 }
 
-export interface ParsedTimes extends ParsedGrammar {
+export interface ParsedTimes extends ParsedPrimitive {
   type: 'times'
   value: '*'
 }
 
-export interface ParsedDivide extends ParsedGrammar {
+export interface ParsedDivide extends ParsedPrimitive {
   type: 'divide'
   value: '/'
 }
 
-export interface ParsedString extends ParsedGrammar {
+export interface ParsedString extends ParsedPrimitive {
   type: 'string'
   value: string
 }
@@ -91,7 +96,7 @@ export function isGrammarType<T extends ParsedGrammar>(value: ParsedGrammar, typ
   return value.type === type
 }
 
-export function isPrimitive(value: ParsedGrammar) {
+export function isPrimitive(value: ParsedGrammar): value is ParsedPrimitive {
   return ['number', 'string', 'divide', 'times', 'plus', 'minus'].includes(value.type)
 }
 

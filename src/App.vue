@@ -30,6 +30,8 @@ function handleFocusChange(fieldName: string) {
     <template #right>
       <CategorizedNodes />
       <CompiledOutput />
+
+      Required Field Inputs
     </template>
   </Layout>
 </template>

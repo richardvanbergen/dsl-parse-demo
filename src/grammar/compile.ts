@@ -1,45 +1,72 @@
 import {
+  isGrammarType,
+  isPrimitive,
+  ParsedBoolean,
+  ParsedReference,
   ParsedFormula,
   ParsedArithmetic,
-  ParsedGrammar,
-  isGrammarType,
-  isPrimitive
+  ParsedGrammar, ParsedFunction, ParsedPrimitive,
 } from "./parser";
 
-type Compiler<T extends ParsedGrammar = ParsedGrammar> = (value: T) => string
+type Compiler<T extends ParsedGrammar> = (value: T) => string
 
-const compilePrimitive: Compiler = (value: ParsedGrammar) => {
-  if (isPrimitive(value)) {
-    return value.text
+export const compilePrimitive: Compiler<ParsedPrimitive> = (value) => {
+  if (isGrammarType<ParsedBoolean>(value, 'boolean')) {
+    return value.text === 'true' ? 'true' : 'false'
   }
 
-  throw new Error(`Expected primitive, got ${value.type}`)
+  return value.text
 }
 
-const compileArithmeticSide = (value: ParsedGrammar): string => {
-  if (isGrammarType<ParsedArithmetic>(value, 'arithmetic')) {
-    return compileArithmetic(value)
+export const compileReference: Compiler<ParsedReference> = (reference): string => {
+  let combine = [reference.value.identifier]
+  if (reference.value.subpath && reference.value.subpath.length > 0) {
+    combine = [...combine, ...reference.value.subpath]
   }
 
-  return compilePrimitive(value)
+  return combine.join('.')
 }
 
-const compileArithmetic: Compiler = (arithmetic: ParsedGrammar) => {
-  if (isGrammarType<ParsedArithmetic>(arithmetic, "arithmetic")) {
-    const left = compileArithmeticSide(arithmetic.value.left)
+export const compileBranch: Compiler<ParsedGrammar> = (param): string => {
+  if (isGrammarType<ParsedArithmetic>(param, 'arithmetic')) {
+    return compileArithmetic(param)
+  }
+
+  if (isGrammarType<ParsedFunction>(param, 'function')) {
+    return compileFunction(param)
+  }
+
+  if (isGrammarType<ParsedReference>(param, 'reference')) {
+    return compileReference(param)
+  }
+
+  if (isPrimitive(param)) {
+    return compilePrimitive(param)
+  }
+
+  throw new Error(`Unsupported grammar type: ${param.type}`)
+}
+
+export const compileArithmetic: Compiler<ParsedArithmetic> = (arithmetic) => {
+  if (isGrammarType<ParsedArithmetic>(arithmetic, 'arithmetic')) {
+    const left = compileBranch(arithmetic.value.left)
     const operator = arithmetic.value.operator
-    const right = compileArithmeticSide(arithmetic.value.right)
+    const right = compileBranch(arithmetic.value.right)
 
-    return `${left} ${operator} ${right}`
+    return `(${left} ${operator} ${right})`
   }
 
   return compilePrimitive(arithmetic)
 }
 
-export const compileFormula: Compiler<ParsedFormula> = (formula: ParsedFormula) => {
-  if (isGrammarType<ParsedArithmetic>(formula.value, "arithmetic")) {
-    return compileArithmetic(formula.value)
-  }
+export const compileFunction: Compiler<ParsedFunction> = (functionValue): string => {
+  const values = functionValue.value.params.map(param => {
+    return compileBranch(param)
+  })
 
-  return compilePrimitive(formula.value)
+  return `${functionValue.value.name}(${values.join(', ')})`
+}
+
+export const compileFormula: Compiler<ParsedFormula> = (formula) => {
+  return compileBranch(formula.value)
 }

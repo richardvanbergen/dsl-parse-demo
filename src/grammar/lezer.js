@@ -2,17 +2,17 @@
 import {LRParser} from "@lezer/lr"
 export const parser = LRParser.deserialize({
   version: 14,
-  states: "%dOVQPOOO[QPO'#C^QOQPOOOpQPO'#CbOuQPO'#CgO[QPO'#CjOOQO'#C`'#C`OzQQO'#C_O!YQPO,58xO!_QPO,58|O!fQQO'#CyOOQO,59R,59RO!zQPO,59UO[QPO'#CqO#PQQO,58yOOQO1G.d1G.dOOQO'#Ce'#CeO#_QPO'#CvO#gQPO1G.hO#lQPO'#CpO#qQPO'#CpO#vQQO,59eOOQO1G.p1G.pOOQO,59],59]OOQO-E6o-E6oO[QPO'#CoO$[QPO,59bOOQO7+$S7+$SOOQO,59[,59[O$dQPO,59[OOQO-E6n-E6nOOQO,59Z,59ZOOQO-E6m-E6mOOQO1G.v1G.v",
-  stateData: "$i~OhOS~OiPO~OTUOVROWTO_UO`UOlSO~OWXO~OVYO~Oa]ObRXYRXkRX~Ob_O~OYjP~P[O[dOncOamXbmXYmXkmX~OYfO~Oa]ObRaYRakRa~OkiOYjX~OYkO~OVlO~OTmO~O[dOncOamabmaYmakma~OkiOYja~O]qO~O",
-  goto: "!|nPPor|P!VPP!^P!VPP!VPPPP!d!j!pPPPP!vPP!yRQOQWPQ[TT`XiWVPTXiRg]ZUPTX]iQaXRoiQjaRpjQeYRneQ^VRh^RbXRZS",
-  nodeNames: "⚠ Program Formula Arithmetic Value Number Function Identifier ParenLeft Parameter ParenRight Reference BracketLeft BracketRight Group String Boolean Operator End",
+  states: "%dOVQPOOO[QPO'#C^QOQPOOOmQPO'#CbOrQPO'#ChO[QPO'#CkOOQO'#C`'#C`OwQQO'#C_O!VQPO,58xO![QPO,58|O!fQQO'#CyOOQO,59S,59SO!zQPO,59VO[QPO'#CqO#PQQO,58yOOQO1G.d1G.dOOQO'#Ce'#CeO#_QPO'#CvO#gQPO1G.hO#lQPO'#CpO#qQPO'#CpO#vQQO,59eOOQO1G.q1G.qOOQO,59],59]OOQO-E6o-E6oO$[QPO'#CoO$cQPO,59bOOQO7+$S7+$SOOQO,59[,59[O$kQPO,59[OOQO-E6n-E6nOOQO,59Z,59ZOOQO-E6m-E6mOOQO1G.v1G.v",
+  stateData: "$p~OhOS~OiPO~OTUOVROWTO`UOlSO~OWXO~OVYO~Oa]ObRXZRXkRX~Ob_O~OY`OZjP~P[O]dOncOamXbmXZmXkmX~OZfO~Oa]ObRaZRakRa~OkiOZjX~OZkO~OVlO~OTmO~O]dOncOamabmaZmakma~OY`O~P[OkiOZja~O^qO~O",
+  goto: "!|nPPor|P!VPP!^PP!VPP!VPPP!d!j!pPPPP!vPP!yRQOQWPQ[TT`XiWVPTXiRg]ZUPTX]iQaXRoiQjaRpjQeYRneQ^VRh^RbXRZS",
+  nodeNames: "⚠ Program Formula Arithmetic Value Number Function Identifier ParenLeft Parameter String ParenRight Reference BracketLeft BracketRight Group Boolean Operator End",
   maxTerm: 30,
   nodeProps: [
-    ["closedBy", 8,"ParenRight",12,"BracketRight"]
+    ["closedBy", 8,"ParenRight",13,"BracketRight"]
   ],
   skippedNodes: [0],
   repeatNodeCount: 3,
-  tokenData: "+O~RqX^#Ypq#Yrs#}tu$qwx$vxy%eyz%jz{%o{|%o|}%t}!O%y!O!P&r!P!Q%o!Q![&_!_!`&w!c!}&|!}#O'_#P#Q'd#Q#R%o#T#Y&|#Y#Z'i#Z#h&|#h#i)y#i#o&|#y#z#Y$f$g#Y#BY#BZ#Y$IS$I_#Y$I|$JO#Y$JT$JU#Y$KV$KW#Y&FU&FV#Y~~*y~#_Yh~X^#Ypq#Y#y#z#Y$f$g#Y#BY#BZ#Y$IS$I_#Y$I|$JO#Y$JT$JU#Y$KV$KW#Y&FU&FV#Y~$SU_~OY#}Zr#}rs$fs#O#}#O#P$k#P~#}~$kO_~~$nPO~#}~$vOl~~${U_~OY$vZw$vwx$fx#O$v#O#P%_#P~$v~%bPO~$v~%jOW~~%oOY~Q%tOaQ~%yOk~R&OQaQ}!O&U!Q![&_P&XQ}!O&U!Q![&_P&dQTP!O!P&j!Q![&_P&oPTP!Q![&j~&wOn~~&|Oi~~'RSV~!Q![&|!c!}&|#R#S&|#T#o&|~'dO[~~'iO]~~'nTV~!Q![&|!c!}&|#R#S&|#T#U'}#U#o&|~(SUV~!Q![&|!c!}&|#R#S&|#T#`&|#`#a(f#a#o&|~(kUV~!Q![&|!c!}&|#R#S&|#T#g&|#g#h(}#h#o&|~)SUV~!Q![&|!c!}&|#R#S&|#T#X&|#X#Y)f#Y#o&|~)mS`~V~!Q![&|!c!}&|#R#S&|#T#o&|~*OUV~!Q![&|!c!}&|#R#S&|#T#f&|#f#g*b#g#o&|~*gUV~!Q![&|!c!}&|#R#S&|#T#i&|#i#j(}#j#o&|~+OOb~",
+  tokenData: "+O~RqX^#Ypq#Yrs#}tu$qwx$vxy%eyz%jz{%o{|%o|}%t}!O%y!O!P&r!P!Q%o!Q![&_!_!`&w!c!}&|!}#O'_#P#Q'd#Q#R%o#T#Y&|#Y#Z'i#Z#h&|#h#i)y#i#o&|#y#z#Y$f$g#Y#BY#BZ#Y$IS$I_#Y$I|$JO#Y$JT$JU#Y$KV$KW#Y&FU&FV#Y~~*y~#_Yh~X^#Ypq#Y#y#z#Y$f$g#Y#BY#BZ#Y$IS$I_#Y$I|$JO#Y$JT$JU#Y$KV$KW#Y&FU&FV#Y~$SUY~OY#}Zr#}rs$fs#O#}#O#P$k#P~#}~$kOY~~$nPO~#}~$vOl~~${UY~OY$vZw$vwx$fx#O$v#O#P%_#P~$v~%bPO~$v~%jOW~~%oOZ~Q%tOaQ~%yOk~R&OQaQ}!O&U!Q![&_P&XQ}!O&U!Q![&_P&dQTP!O!P&j!Q![&_P&oPTP!Q![&j~&wOn~~&|Oi~~'RSV~!Q![&|!c!}&|#R#S&|#T#o&|~'dO]~~'iO^~~'nTV~!Q![&|!c!}&|#R#S&|#T#U'}#U#o&|~(SUV~!Q![&|!c!}&|#R#S&|#T#`&|#`#a(f#a#o&|~(kUV~!Q![&|!c!}&|#R#S&|#T#g&|#g#h(}#h#o&|~)SUV~!Q![&|!c!}&|#R#S&|#T#X&|#X#Y)f#Y#o&|~)mS`~V~!Q![&|!c!}&|#R#S&|#T#o&|~*OUV~!Q![&|!c!}&|#R#S&|#T#f&|#f#g*b#g#o&|~*gUV~!Q![&|!c!}&|#R#S&|#T#i&|#i#j(}#j#o&|~+OOb~",
   tokenizers: [0, 1],
   topRules: {"Program":[0,1]},
   tokenPrec: 0
