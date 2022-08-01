@@ -41,7 +41,7 @@ function isParsedReference(node: ParsedGrammar): node is ParsedReference {
                 </li>
 
                 <li v-if="isParsedReference(node)">
-                  {{ compileReference(node) }}
+                  {{ compileReference(node, { input: { age: 255 } }) }}
                 </li>
               </template>
             </ul>

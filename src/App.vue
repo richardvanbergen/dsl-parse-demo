@@ -31,7 +31,11 @@ function handleFocusChange(fieldName: string) {
       <CategorizedNodes />
       <CompiledOutput />
 
-      Required Field Inputs
+      <div>Required Field Inputs</div>
+      <div>Traced Resolution</div>
+      <div>Global Error Tracking</div>
+      <div>Automatic Value Resolution</div>
+      <div>Inline Error Highlighting for Resolved Values</div>
     </template>
   </Layout>
 </template>

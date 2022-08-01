@@ -12,7 +12,7 @@ export const useFieldStore = defineStore('fieldStore', {
     compiledOutput: function(): string {
       const ast = this.fieldAst
       if (ast) {
-        return compileFormula(ast)
+        return compileFormula(ast, { input: { age: 23 } })
       }
 
       return ""
