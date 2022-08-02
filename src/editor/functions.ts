@@ -32,12 +32,24 @@ registeredFunctions.set('ROUND', {
   detail: 'Rounds a value to a given precision',
 })
 
-registeredFunctions.set('PRINT_REPLACE', {
+registeredFunctions.set('STRING_REPLACE', {
   fn: (parsedGrammar) => {
-    const value = parsedGrammar[0]
-    return String(parsedGrammar[1]).replaceAll('%', String(value))
+    const template = String(parsedGrammar[0])
+    const replace = String(parsedGrammar[1])
+    return String(template).replaceAll('%', String(replace))
   },
-  info: "PRINT_REPLACE(value: string, replacement: string)",
+  info: "STRING_REPLACE(template: string, replacement: string)",
+  detail: 'Replaces all "%" in a string with a value',
+})
+
+registeredFunctions.set('JSON', {
+  fn: (parsedGrammar) => {
+    const json = String(parsedGrammar[0])
+    if (json) {
+      return JSON.parse(json)
+    }
+  },
+  info: "JSON(json_stringified: string)",
   detail: 'Replaces all "%" in a string with a value',
 })
 

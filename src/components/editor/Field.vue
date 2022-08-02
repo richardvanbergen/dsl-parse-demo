@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue"
-import { newEditor } from "../../grammar/editor"
-import { ParsedFormula } from "../../grammar/parser";
+import { newEditor } from "../../editor/editor"
+import { ParsedFormula } from "../../editor/parser";
 
 const props = defineProps<{
   name: string,

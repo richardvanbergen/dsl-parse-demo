@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import Field from "./editor/Field.vue"
 import {onMounted, ref} from "vue"
-import { ParsedFormula } from "../grammar/parser"
+import { ParsedFormula } from "../editor/parser"
 import { useFieldStore } from "../stores/useFieldStore"
 import {storeToRefs} from "pinia";
 

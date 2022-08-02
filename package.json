@@ -7,7 +7,7 @@
     "test": "yarn build:grammar && vue-tsc --noEmit && vitest",
     "dev": "yarn build:grammar && vite",
     "lint": "vue-cli-service lint",
-    "build:grammar": "nearleyc ./src/grammar/grammar.ne --out src/grammar/grammar.ts && lezer-generator src/grammar/lezer.grammar -o src/grammar/lezer.js",
+    "build:grammar": "nearleyc src/editor/grammar.ne --out src/editor/grammar.ts && lezer-generator src/editor/lezer.grammar -o src/editor/lezer.js",
     "preview": "vite preview"
   },
   "dependencies": {

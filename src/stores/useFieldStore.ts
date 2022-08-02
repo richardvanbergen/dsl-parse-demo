@@ -1,8 +1,8 @@
 import { acceptHMRUpdate, defineStore } from "pinia"
-import { flatten, GrammarType, ParsedFormula, ParsedGrammar } from "../grammar/parser"
-import { compileFormula } from "../grammar/compile"
-import {createResolver, ResolvedBranch} from "../grammar/resolve"
-import {toResolvers, registeredFunctions} from "../grammar/functions";
+import { flatten, GrammarType, ParsedFormula, ParsedGrammar } from "../editor/parser"
+import { compileFormula } from "../editor/compile"
+import {createResolver, ResolvedBranch} from "../editor/resolve"
+import {toResolvers, registeredFunctions} from "../editor/functions";
 
 const resolver = createResolver(toResolvers(registeredFunctions))
 
