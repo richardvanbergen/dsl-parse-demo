@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-neutral-100 p-4 h-screen min-w-full lg:grid grid-cols-3 grid-rows-3 gap-4">
+  <div  :class="[$slots.center ? 'grid-cols-3' : 'grid-cols-2', 'bg-neutral-100 p-4 h-screen min-w-full lg:grid grid-rows-3 gap-4']" class="">
     <div class="bg-white col-span-1 row-span-3 drop-shadow-lg">
       <div class="h-full overflow-y-auto overflow-x-visible p-6 flex flex-col gap-10">
         <div class="flex-1">
@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <div class="p-6 bg-white col-span-1 row-span-3 gap-4 drop-shadow-lg">
+    <div class="p-6 bg-white col-span-1 row-span-3 gap-4 drop-shadow-lg" v-if="$slots.center">
       <div class="h-full overflow-y-auto overflow-x-visible">
         <slot name="center" />
       </div>

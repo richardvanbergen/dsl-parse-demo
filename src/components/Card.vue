@@ -7,7 +7,7 @@
         </h3>
       </div>
 
-      <div class="divide-y divide-gray-200" v-if="this.$slots.content">
+      <div class="divide-y divide-gray-200" v-if="$slots.content">
         <div class="relative bg-white py-5 px-4 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
           <slot name="content" />
         </div>

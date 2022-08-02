@@ -11,7 +11,7 @@ type Reducers = {
   function: (name: string, params: unknown[]) => unknown,
   primitive: (value: string | boolean | number) => unknown,
   reference: (identifier: string, subPaths: string[]) => unknown,
-  arithmetic: (left: unknown, operator: string, right: unknown) => unknown,
+  arithmetic: (left: number | undefined, operator: string, right: number | undefined) => unknown,
 }
 
 export function createResolver<T>(reducers: Reducers) {
@@ -40,7 +40,7 @@ export function createResolver<T>(reducers: Reducers) {
   const resolveArithmetic = (arithmetic: ParsedArithmetic): T | undefined => {
     const left = resolveBranch(arithmetic.value.left)
     const right = resolveBranch(arithmetic.value.right)
-    return reducers.arithmetic(left, arithmetic.value.operator.value, right) as T
+    return reducers.arithmetic(left as any, arithmetic.value.operator.value, right as any) as T
   }
 
   const resolveReference = (reference: ParsedReference): T | undefined => {

@@ -4,6 +4,7 @@ import {onMounted, ref} from "vue"
 import { ParsedFormula } from "../editor/parser"
 import { useFieldStore } from "../stores/useFieldStore"
 import {storeToRefs} from "pinia";
+import Button from "./Button.vue";
 
 const fieldStore = useFieldStore()
 const { fields } = storeToRefs(fieldStore)
@@ -32,6 +33,10 @@ function createEmptyField() {
   fieldStore.createNewField()
 }
 
+function getRandomNumber() {
+  return Math.floor(Math.random() * 100)
+}
+
 onMounted(() => {
   fieldStore.updateInput('age', 234)
 })
@@ -50,8 +55,6 @@ document.addEventListener("click", (e) => {
       {{ fieldName }}
     </Field>
 
-    <button type="button" @click="createEmptyField" class="self-start inline-flex items-center px-2.5 py-1.5 border border-transparent text-md font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-      Create Field
-    </button>
+    <Button @click="createEmptyField">Create Field</Button>
   </div>
 </template>
