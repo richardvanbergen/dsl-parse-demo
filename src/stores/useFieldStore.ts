@@ -1,18 +1,71 @@
 import { acceptHMRUpdate, defineStore } from "pinia"
 import { flatten, GrammarType, ParsedFormula, ParsedGrammar } from "../grammar/parser"
 import { compileFormula } from "../grammar/compile"
+import {createResolver, ResolvedBranch} from "../grammar/resolve"
+import { max, min, round } from "mathjs"
+
+const resolverFunctions = new Map<string, (value: unknown[]) => unknown>()
+
+resolverFunctions.set('MAX', (parsedGrammar) => {
+  return max(...parsedGrammar.map(value => Number(value)))
+})
+
+resolverFunctions.set('MIN', (parsedGrammar) => {
+  return min(...parsedGrammar.map(value => Number(value)))
+})
+
+resolverFunctions.set('ROUND', (parsedGrammar) => {
+  const value = Number(parsedGrammar[0])
+  const precision = Number(parsedGrammar[1])
+  return round(value, precision)
+})
+
+const resolver = createResolver(resolverFunctions)
 
 export const useFieldStore = defineStore('fieldStore', {
   state: () => ({
     counter: 1,
     focusedField: "",
+    input: new Map<string, unknown>(),
     fields: new Map<string, ParsedFormula | null>(),
   }),
   getters: {
+    debugOutput: function(): { name: string, value: unknown, color: string, description: string }[] {
+      const result = this.resolvedOutput?.result
+      const formula = this.resolvedOutput?.formula
+      const compiled = this.compiledOutput
+
+      return [
+        {
+          name: "Result",
+          value: result,
+          color: "bg-green-600",
+          description: "Final result of the formula",
+        },
+        {
+          name: "Formula",
+          value: formula,
+          color: "bg-purple-600",
+          description: "Formula with branch values calculated",
+        },
+        {
+          name: "Compiled",
+          value: compiled,
+          color: "bg-yellow-600",
+          description: "Full unresolved formula",
+        }
+      ]
+    },
+    resolvedOutput: function(): ResolvedBranch | undefined {
+      const ast = this.fieldAst
+      if (ast) {
+        return resolver(ast, { input: Object.fromEntries(this.input) })
+      }
+    },
     compiledOutput: function(): string {
       const ast = this.fieldAst
       if (ast) {
-        return compileFormula(ast, { input: { age: 23 } })
+        return compileFormula(ast, { input: Object.fromEntries(this.input) })
       }
 
       return ""
@@ -38,6 +91,9 @@ export const useFieldStore = defineStore('fieldStore', {
   actions: {
     setFocusedField(field: string) {
       this.focusedField = field
+    },
+    updateInput(key: string, value: unknown) {
+      this.input.set(key, value)
     },
     updateAst(field: string, ast: ParsedFormula | null = null) {
       this.fields.set(field, ast)

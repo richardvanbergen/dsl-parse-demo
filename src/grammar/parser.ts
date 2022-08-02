@@ -2,10 +2,10 @@
 import {Grammar, Parser} from "nearley"
 import grammar from "./grammar"
 
-export type GrammarPrimitive = 'boolean' | 'number'  | 'plus' | 'minus' | 'times' | 'divide' | 'string'
+export type GrammarPrimitive = 'boolean' | 'number'  | 'plus' | 'minus' | 'times' | 'divide' | 'exponent' | 'string'
 export type GrammarType =  'formula' | 'function' | 'arithmetic' | 'reference' | GrammarPrimitive
 
-export interface ParsedGrammar extends ParsedReference {
+export interface ParsedGrammar {
   type: GrammarType
   value: unknown
   text: string
@@ -49,6 +49,11 @@ export interface ParsedDivide extends ParsedPrimitive {
   value: '/'
 }
 
+export interface ParsedExponent extends ParsedPrimitive {
+  type: 'exponent'
+  value: '^'
+}
+
 export interface ParsedString extends ParsedPrimitive {
   type: 'string'
   value: string
@@ -70,7 +75,7 @@ export interface ParsedFunction extends ParsedGrammar {
   }
 }
 
-export type ParsedOperator = ParsedPlus | ParsedMinus | ParsedTimes | ParsedDivide
+export type ParsedOperator = ParsedPlus | ParsedMinus | ParsedTimes | ParsedDivide | ParsedExponent
 export type ParsedFormulaValue =
   ParsedArithmetic |
   ParsedBoolean |

@@ -6,8 +6,8 @@ import 'vue-json-pretty/lib/styles.css'
 import Layout from "./Layout.vue"
 import { useFieldStore } from "./stores/useFieldStore"
 import Fields from "./components/Fields.vue"
-import CategorizedNodes from "./components/CategorizedNodes.vue";
-import CompiledOutput from "./components/CompiledOutput.vue";
+import CategorizedNodes from "./components/CategorizedNodes.vue"
+import ResolveOutput from "./components/ResolveOutput.vue"
 
 const fieldStore = useFieldStore()
 const { fieldAst } = storeToRefs(fieldStore)
@@ -29,7 +29,7 @@ function handleFocusChange(fieldName: string) {
 
     <template #right>
       <CategorizedNodes />
-      <CompiledOutput />
+      <ResolveOutput />
 
       <div>Required Field Inputs</div>
       <div>Traced Resolution</div>

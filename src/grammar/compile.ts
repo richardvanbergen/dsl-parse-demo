@@ -31,16 +31,16 @@ export const compileReference: Compiler<ParsedReference> = (reference, inputs): 
     return value
   }
 
-  throw new Error(`Reference $${combine.join('.')} not found`)
+  return ""
 }
 
 export const compileBranch: Compiler<ParsedGrammar> = (param, inputs): string => {
   if (isGrammarType<ParsedArithmetic>(param, 'arithmetic')) {
-    return compileArithmetic(param)
+    return compileArithmetic(param, inputs)
   }
 
   if (isGrammarType<ParsedFunction>(param, 'function')) {
-    return compileFunction(param)
+    return compileFunction(param, inputs)
   }
 
   if (isGrammarType<ParsedReference>(param, 'reference')) {
@@ -66,9 +66,9 @@ export const compileArithmetic: Compiler<ParsedArithmetic> = (arithmetic, inputs
   return compilePrimitive(arithmetic)
 }
 
-export const compileFunction: Compiler<ParsedFunction> = (functionValue: ParsedFunction): string => {
+export const compileFunction: Compiler<ParsedFunction> = (functionValue: ParsedFunction, inputs): string => {
   const values = functionValue.value.params.map(param => {
-    return compileBranch(param)
+    return compileBranch(param, inputs)
   })
 
   return `${functionValue.value.name}(${values.join(', ')})`

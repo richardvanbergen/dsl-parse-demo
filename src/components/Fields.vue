@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import Field from "./editor/Field.vue"
-import { ref } from "vue"
+import {onMounted, ref} from "vue"
 import { ParsedFormula } from "../grammar/parser"
 import { useFieldStore } from "../stores/useFieldStore"
 import {storeToRefs} from "pinia";
@@ -31,6 +31,10 @@ function hasFocus(fieldName: string) {
 function createEmptyField() {
   fieldStore.createNewField()
 }
+
+onMounted(() => {
+  fieldStore.updateInput('age', 234)
+})
 
 document.addEventListener("click", (e) => {
   const target = e.target as HTMLElement

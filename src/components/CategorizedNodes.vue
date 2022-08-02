@@ -3,6 +3,7 @@ import { storeToRefs } from "pinia"
 import { isPrimitive, isGrammarType, ParsedFunction, ParsedReference, ParsedGrammar } from "../grammar/parser"
 import { compileReference } from "../grammar/compile"
 import {useFieldStore} from "../stores/useFieldStore"
+import Card from "./Card.vue";
 
 const fieldStore = useFieldStore()
 const { categorizedNodes } = storeToRefs(fieldStore)
@@ -14,40 +15,61 @@ function isParsedFunction(node: ParsedGrammar): node is ParsedFunction {
 function isParsedReference(node: ParsedGrammar): node is ParsedReference {
   return isGrammarType<ParsedReference>(node, 'reference')
 }
+
+const colorMap = {
+  'formula': 'bg-blue-500',
+  'arithmetic': 'bg-green-500',
+  'primitive': 'bg-yellow-500',
+  'reference': 'bg-orange-500',
+  'function': 'bg-purple-500',
+}
 </script>
 
 <template>
-  <div class="bg-white shadow overflow-hidden rounded-md">
-    <div class="divide-y divide-gray-200">
-      <div class="bg-white px-4 py-5 border-b border-gray-200 sm:px-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Categorized AST Nodes</h3>
-      </div>
+  <Card>
+    <template #title>
+      Categorized Nodes
+    </template>
 
-      <template v-for="(nodes, type) of Object.fromEntries(categorizedNodes)">
-        <div v-if="type !== 'formula' && type !== 'arithmetic'" class="divide-y divide-gray-200">
-          <div class="relative bg-white py-5 px-4 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600">
-            <h4 class="text-lg leading-6 font-medium text-gray-500 capitalize mb-2">
-              {{ type }}
-            </h4>
-
-            <ul>
-              <template v-for="node of nodes">
-                <li v-if="isPrimitive(node)">
-                  {{ node.value }}
-                </li>
-
-                <li v-if="isParsedFunction(node)">
-                  {{ node.value.name }}
-                </li>
-
-                <li v-if="isParsedReference(node)">
-                  {{ compileReference(node, { input: { age: 255 } }) }}
-                </li>
-              </template>
-            </ul>
+    <template #content>
+      <ul role="list" class="grid grid-cols-1 gap-5 sm:gap-4 sm:grid-cols-2">
+        <li v-for="(nodes, type) of Object.fromEntries(categorizedNodes)" :key="type" class="col-span-1 flex shadow-sm rounded-md">
+          <div :class="[colorMap[type] ?? 'bg-gray-500', 'flex-shrink-0 flex items-center justify-center w-16 text-white text-sm font-medium rounded-l-md']">
+            {{ type.at(0).toLocaleUpperCase() }}
           </div>
-        </div>
-      </template>
-    </div>
-  </div>
+
+          <div class="flex-1 flex items-center justify-between border-t border-r border-b border-gray-200 bg-white rounded-r-md truncate">
+            <div class="flex-1 px-4 py-2 text-sm truncate">
+              <p class="text-gray-900 font-medium hover:text-gray-600 capitalize">{{ type }} values</p>
+              <p class="text-gray-500">
+                <template v-if="type === 'formula'">
+                  {{ nodes.length }} Formula
+                </template>
+
+                <template v-if="type === 'arithmetic'">
+                  {{ nodes.length }} Arithmetic
+                </template>
+
+                <template v-else v-for="(node, key) of nodes" :key="key">
+                  <span v-if="isPrimitive(node)">
+                    {{ node.value }}
+                  </span>
+
+                  <span v-if="isParsedFunction(node)">
+                    {{ node.value.name }}
+                  </span>
+
+                  <span v-if="isParsedReference(node)">
+                    {{ compileReference(node, { input: { age: 255 } }) }}
+                  </span>
+
+                  <span v-if="key !== nodes.length - 1">, </span>
+                </template>
+              </p>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </template>
+  </Card>
 </template>
