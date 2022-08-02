@@ -2,7 +2,7 @@ import {syntaxTree} from "@codemirror/language"
 import {Completion, CompletionContext} from "@codemirror/autocomplete"
 import {EditorView} from "codemirror"
 import {get, isObject} from "lodash"
-import { registeredFunctions, toCompletions } from '../../grammar/functions'
+import { registeredFunctions, toCompletions } from './functions'
 
 const insertFunction = (view: EditorView, completion: Completion, from: number, to: number) => {
   const text = `${completion.label}`

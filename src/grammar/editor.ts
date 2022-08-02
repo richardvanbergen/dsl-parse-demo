@@ -5,9 +5,9 @@ import { LRLanguage, LanguageSupport, syntaxTree, language } from "@codemirror/l
 import { EditorState, Compartment } from "@codemirror/state"
 import { markdown } from "@codemirror/lang-markdown"
 import { linter, Diagnostic } from "@codemirror/lint"
-import {IncompleteInputError, parse, ParsedFormula} from "../../grammar/parser"
+import {IncompleteInputError, parse, ParsedFormula} from "./parser"
 // @ts-expect-error no types
-import { parser } from "../../grammar/lezer.js"
+import { parser } from "./lezer.js"
 import { autocomplete } from "./autocomplete"
 
 let parserWithMetadata = parser.configure({
