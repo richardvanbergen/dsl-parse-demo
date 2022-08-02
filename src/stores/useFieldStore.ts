@@ -1,23 +1,94 @@
 import { acceptHMRUpdate, defineStore } from "pinia"
 import { flatten, GrammarType, ParsedFormula, ParsedGrammar } from "../editor/parser"
-import { compileFormula } from "../editor/compile"
-import {createResolver, ResolvedBranch} from "../editor/resolve"
-import {toResolvers, registeredFunctions} from "../editor/functions";
+import { createResolver } from "../editor/resolve"
+import { toResolvers, registeredFunctions } from "../editor/functions";
+import { divide, multiply, pow, subtract, sum } from "mathjs";
+import get from 'lodash/get'
 
-const resolver = createResolver(toResolvers(registeredFunctions))
+const functions = toResolvers(registeredFunctions)
+// parser should ensure that left and right are both resolvable to a number
+// if not then this will throw an error as we have bad input
+type OperationFn = (x: unknown, y: unknown) => number
+
+const getOperationFunction = (operation: string) => {
+  if (operation === '+') {
+    return sum as OperationFn
+  }
+
+  if (operation === '-') {
+    return subtract as OperationFn
+  }
+
+  if (operation === '*') {
+    return multiply as OperationFn
+  }
+
+  if (operation === '/') {
+    return divide as OperationFn
+  }
+
+  if (operation === '^') {
+    return pow as OperationFn
+  }
+}
+
+const compiledResolver = createResolver<string>({
+  function: (name, params) => {
+    return `${name}(${params.join(',')})`
+  },
+  arithmetic: (left, operator, right) => {
+    return `(${left} ${operator} ${right})`
+  },
+  primitive: (value) => value,
+  reference: (identifier, subPaths) => {
+    let combine: string[] = [identifier]
+    if (subPaths && subPaths.length > 0) {
+      combine = [...combine, ...subPaths]
+    }
+    return `$${combine.join('.')}`
+  },
+})
+
+const createResultResolver = (inputValues: { input: Record<string, unknown> }) => {
+  return createResolver<unknown>({
+    function: (name, params) => {
+      const toRun = functions.get(name)
+
+      if (toRun) {
+        return toRun(params)
+      }
+    },
+    arithmetic: (left, operator, right) => {
+      const operationFn = getOperationFunction(operator)
+
+      if (operationFn) {
+        return operationFn(left, right)
+      }
+    },
+    primitive: (value) => value,
+    reference: (identifier, subPaths) => {
+      let combine = [identifier]
+      if (subPaths && subPaths.length > 0) {
+        combine = [...combine, ...subPaths]
+      }
+
+      return get(inputValues, combine)
+    },
+  })
+}
 
 export const useFieldStore = defineStore('fieldStore', {
   state: () => ({
     counter: 1,
     focusedField: "",
+    resolvedValues: new Map<string, unknown>(),
     input: new Map<string, unknown>(),
     fields: new Map<string, ParsedFormula | null>(),
   }),
   getters: {
     debugOutput: function(): { name: string, value: unknown, color: string, description: string }[] {
-      const result = this.resolvedOutput?.result
-      const formula = this.resolvedOutput?.formula
-      const compiled = this.compiledOutput
+      const result = this.resolvedOutput
+      const formula = this.compiledOutput
 
       return [
         {
@@ -32,24 +103,19 @@ export const useFieldStore = defineStore('fieldStore', {
           color: "bg-purple-600",
           description: "Formula with branch values calculated",
         },
-        {
-          name: "Compiled",
-          value: compiled,
-          color: "bg-yellow-600",
-          description: "Full unresolved formula",
-        }
       ]
     },
-    resolvedOutput: function(): ResolvedBranch | undefined {
+    resolvedOutput: function(): unknown | undefined {
       const ast = this.fieldAst
       if (ast) {
-        return resolver(ast, { input: Object.fromEntries(this.input) })
+        const resolver = createResultResolver({ input: Object.fromEntries(this.input) })
+        return resolver(ast)
       }
     },
     compiledOutput: function(): string {
       const ast = this.fieldAst
       if (ast) {
-        return compileFormula(ast, { input: Object.fromEntries(this.input) })
+        return compiledResolver(ast) ?? ''
       }
 
       return ""
