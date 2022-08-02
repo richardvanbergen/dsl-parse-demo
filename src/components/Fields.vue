@@ -33,10 +33,6 @@ function createEmptyField() {
   fieldStore.createNewField()
 }
 
-function getRandomNumber() {
-  return Math.floor(Math.random() * 100)
-}
-
 onMounted(() => {
   fieldStore.updateInput('age', 234)
 })

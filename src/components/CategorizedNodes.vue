@@ -6,7 +6,7 @@ import {useFieldStore} from "../stores/useFieldStore"
 import Card from "./Card.vue";
 
 const fieldStore = useFieldStore()
-const { categorizedNodes } = storeToRefs(fieldStore)
+const { categorizedNodes, input, resolvedValues } = storeToRefs(fieldStore)
 
 function isParsedFunction(node: ParsedGrammar): node is ParsedFunction {
   return isGrammarType<ParsedFunction>(node, 'function')
@@ -65,7 +65,7 @@ const colorMap = {
                   </span>
 
                   <span v-if="isParsedReference(node)">
-                    {{ compileReference(node, { input: { age: 255 } }) }}
+                    {{ compileReference(node, input, resolvedValues) }}
                   </span>
 
                   <span v-if="key !== nodes.length - 1">, </span>

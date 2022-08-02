@@ -55,6 +55,12 @@ class ArithmeticError extends Error {
   }
 }
 
+class FunctionError extends Error {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
 const createResultResolver = (inputValues: { input: Record<string, unknown> }) => {
   return createResolver<unknown>({
     function: (name, params) => {
@@ -62,6 +68,8 @@ const createResultResolver = (inputValues: { input: Record<string, unknown> }) =
 
       if (toRun) {
         return toRun(params)
+      } else {
+        throw new FunctionError(`Function ${name} not found.`)
       }
     },
     arithmetic: (left, operator, right) => {
@@ -194,10 +202,21 @@ export const useFieldStore = defineStore('fieldStore', {
 
         try {
           this.resolvedValues.set(field, resolver(target.tree))
+          const dependents = this.dependants.get(field) ?? []
+          dependents.forEach(dependent => {
+            this.resolveField(dependent)
+          })
         } catch (e) {
           if (e instanceof ArithmeticError) {
             this.resolvedValues.set(field, e.message)
+            return
           }
+          if (e instanceof FunctionError) {
+            this.resolvedValues.set(field, e.message)
+            return
+          }
+
+          throw e
         }
       }
     },
