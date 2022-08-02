@@ -22,6 +22,11 @@ const colorMap = {
   'primitive': 'bg-yellow-500',
   'reference': 'bg-orange-500',
   'function': 'bg-purple-500',
+  'number': 'bg-red-500',
+  'divide': 'bg-pink-500',
+  'times': 'bg-rose-500',
+  'plus': 'bg-fuchsia-500',
+  'minus': 'bg-violet-500',
 }
 </script>
 

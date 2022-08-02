@@ -112,7 +112,6 @@ export function newEditor(element: HTMLElement, updateHooks?: ((value?: ParsedFo
               hook(parsed)
             }
           } catch (e) {
-            console.warn(e)
             hook()
           }
         }

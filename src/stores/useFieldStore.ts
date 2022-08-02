@@ -2,25 +2,9 @@ import { acceptHMRUpdate, defineStore } from "pinia"
 import { flatten, GrammarType, ParsedFormula, ParsedGrammar } from "../grammar/parser"
 import { compileFormula } from "../grammar/compile"
 import {createResolver, ResolvedBranch} from "../grammar/resolve"
-import { max, min, round } from "mathjs"
+import {toResolvers, registeredFunctions} from "../grammar/functions";
 
-const resolverFunctions = new Map<string, (value: unknown[]) => unknown>()
-
-resolverFunctions.set('MAX', (parsedGrammar) => {
-  return max(...parsedGrammar.map(value => Number(value)))
-})
-
-resolverFunctions.set('MIN', (parsedGrammar) => {
-  return min(...parsedGrammar.map(value => Number(value)))
-})
-
-resolverFunctions.set('ROUND', (parsedGrammar) => {
-  const value = Number(parsedGrammar[0])
-  const precision = Number(parsedGrammar[1])
-  return round(value, precision)
-})
-
-const resolver = createResolver(resolverFunctions)
+const resolver = createResolver(toResolvers(registeredFunctions))
 
 export const useFieldStore = defineStore('fieldStore', {
   state: () => ({

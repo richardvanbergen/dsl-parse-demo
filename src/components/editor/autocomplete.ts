@@ -2,6 +2,7 @@ import {syntaxTree} from "@codemirror/language"
 import {Completion, CompletionContext} from "@codemirror/autocomplete"
 import {EditorView} from "codemirror"
 import {get, isObject} from "lodash"
+import { registeredFunctions, toCompletions } from '../../grammar/functions'
 
 const insertFunction = (view: EditorView, completion: Completion, from: number, to: number) => {
   const text = `${completion.label}`
@@ -138,9 +139,7 @@ const getReferenceCompletions = async (text: string): Promise<{
       const completions = [
         {label: `$input`, type: 'variable', detail: 'User Input'},
         ...Object.keys(nodes).map(key => ({label: `$${key}`, type: 'variable', detail: 'Node'})),
-        {label: 'MIN()', type: 'keyword', info: 'MIN(a: number, b: number, ...)', detail: 'Returns the lowest value in a list of numbers'},
-        {label: 'MAX()', type: 'keyword', info: 'MAX(a: number, b: number, ...)', detail: 'Returns the highest value in a list of numbers'},
-        {label: 'ROUND()', type: 'keyword', info: 'ROUND(a: number, precision: number)', detail: 'Rounds a number to a specified precision'},
+        ...toCompletions(registeredFunctions)
       ]
 
       resolve(completions)
