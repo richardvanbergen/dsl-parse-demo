@@ -16,12 +16,11 @@ import {
 
 import {
   stringResolver,
-  createResultResolver,
-  ArithmeticError,
-  FunctionError,
+  createResultResolver
 } from '../editor/resolvers'
 
 import { Inputs, ResolvedValue } from "../editor/resolve";
+import {omit} from "lodash";
 
 type FieldInformation = {
   list: ParsedGrammar[] | undefined
@@ -75,6 +74,27 @@ export const useFieldStore = defineStore('fieldStore', {
           description: "Formula with branch values calculated",
         },
       ]
+    },
+    formulaInput(): Record<string, unknown> {
+      const resolvedValues = this.inputs.values
+      const values = this.focusedField
+        ? omit(Object.fromEntries(resolvedValues), this.focusedField)
+        : Object.fromEntries(resolvedValues)
+
+      const cleanValues: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(values)) {
+        cleanValues[key] = value.value
+      }
+
+      const cleanInputs: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(Object.fromEntries(this.inputs.input))) {
+        cleanInputs[key] = value.value
+      }
+
+      return {
+        input: cleanInputs,
+        ...cleanValues
+      }
     },
     resolvedOutput: function(): unknown | undefined {
       return this.inputs.values.get(this.focusedField)
@@ -134,7 +154,7 @@ export const useFieldStore = defineStore('fieldStore', {
           throw e
         }
 
-        const resolver = createResultResolver(this.inputs)
+        const resolver = createResultResolver(this.formulaInput)
 
         try {
           this.inputs.values.set(field, {
@@ -146,16 +166,9 @@ export const useFieldStore = defineStore('fieldStore', {
             this.resolveField(dependent)
           })
         } catch (e) {
-          if (e instanceof ArithmeticError) {
-            this.inputs.values.set(field, { value: null, error: e.message })
-            return
-          }
-          if (e instanceof FunctionError) {
-            this.inputs.values.set(field, { value: null, error: e.message })
-            return
-          }
-
-          throw e
+          const error = e as Error
+          this.inputs.values.set(field, { value: null, error: error.message })
+          return
         }
       }
     },
