@@ -1,4 +1,12 @@
-import {isGrammarType, ParsedArithmetic, ParsedFormula, ParsedFunction, ParsedGrammar, ParsedReference} from "./parser"
+import { isGrammarType } from "./parser"
+
+import type {
+  ParsedArithmetic,
+  ParsedFormula,
+  ParsedFunction,
+  ParsedGrammar,
+  ParsedReference
+} from './grammarTypes'
 
 type GraphState = Map<string, {
   color: 'white' | 'gray' | 'black',

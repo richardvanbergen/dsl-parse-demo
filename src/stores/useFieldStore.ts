@@ -1,10 +1,10 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 
-import {
+import type {
   GrammarType,
   ParsedFormula,
   ParsedGrammar
-} from '../editor/parser'
+} from '../editor/grammarTypes'
 
 import {
   generateDependantsGraph,

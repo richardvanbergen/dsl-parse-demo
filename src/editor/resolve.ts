@@ -1,11 +1,19 @@
 import {
   isGrammarType,
   isPrimitive,
+} from "./parser"
+
+import type {
   ParsedFormula,
   ParsedGrammar,
   ParsedArithmetic,
-  ParsedFunction, ParsedReference, ParsedPrimitive, ParsedString, ParsedBoolean, ParsedNumber
-} from "./parser"
+  ParsedFunction,
+  ParsedReference,
+  ParsedPrimitive,
+  ParsedString,
+  ParsedBoolean,
+  ParsedNumber
+} from './grammarTypes'
 
 type Reducers = {
   function: (name: string, params: unknown[]) => unknown,

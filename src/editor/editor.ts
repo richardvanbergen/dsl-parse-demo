@@ -5,7 +5,8 @@ import { LRLanguage, LanguageSupport, syntaxTree, language } from "@codemirror/l
 import { EditorState, Compartment } from "@codemirror/state"
 import { markdown } from "@codemirror/lang-markdown"
 import { linter, Diagnostic } from "@codemirror/lint"
-import {IncompleteInputError, parse, ParsedFormula} from "./parser"
+import { IncompleteInputError, parse } from "./parser"
+import {  ParsedFormula } from "./grammarTypes"
 // @ts-expect-error no types
 import { parser } from "./lezer.js"
 import { autocomplete } from "./autocomplete"
