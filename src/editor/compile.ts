@@ -14,6 +14,8 @@ export const compileReference: Compiler<ParsedReference> = (reference, inputs, r
     combine = [...combine, ...reference.value.subpath]
   }
 
+  console.log({ ...inputs, ...values })
+
   const value = get({ ...inputs, ...values }, combine)
   if (value) {
     return value

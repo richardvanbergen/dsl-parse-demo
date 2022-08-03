@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <div class="h-full overflow-y-auto overflow-x-visible flex flex-col gap-4 row-span-3">
+    <div class="overflow-y-auto overflow-x-visible row-span-3">
       <slot name="right" />
     </div>
   </div>

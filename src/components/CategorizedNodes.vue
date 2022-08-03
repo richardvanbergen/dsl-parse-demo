@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { storeToRefs } from "pinia"
 import { isPrimitive, isGrammarType, ParsedFunction, ParsedReference, ParsedGrammar } from "../editor/parser"
-import { compileReference } from "../editor/compile"
 import {useFieldStore} from "../stores/useFieldStore"
 import Card from "./Card.vue";
 
@@ -65,7 +64,7 @@ const colorMap = {
                   </span>
 
                   <span v-if="isParsedReference(node)">
-                    {{ compileReference(node, input, resolvedValues) }}
+                    {{ [node.value.identifier, ...node.value.subpath ?? []].join('.') }}
                   </span>
 
                   <span v-if="key !== nodes.length - 1">, </span>
