@@ -1,57 +1,20 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { flatten, GrammarType, ParsedFormula, ParsedGrammar, ParsedReference } from '../editor/parser'
-import { stringResolver, createResultResolver, ArithmeticError, FunctionError } from '../editor/resolvers'
 
+import {
+  flatten,
+  generateDependantsGraph,
+  GrammarType,
+  GraphError,
+  ParsedFormula,
+  ParsedGrammar
+} from '../editor/parser'
+
+import { stringResolver, createResultResolver, ArithmeticError, FunctionError } from '../editor/resolvers'
 
 type FieldInformation = {
   list: ParsedGrammar[] | undefined
   tree: ParsedFormula | undefined
-  references: Set<string> | undefined
-}
-
-
-type GraphContext = {
-  fields: Map<string, FieldInformation | null>
-  dependencyGraph: Map<string, Set<string>>
-}
-
-type GraphState = Map<string, {
-  color: 'white' | 'gray' | 'black',
-}>
-
-class GraphError extends Error {
-  constructor(message: string, graphState: GraphState) {
-    console.log(graphState)
-    super(message + '\n' + JSON.stringify(graphState, null, 2))
-  }
-}
-
-function generateGraph(field: string, state: GraphState, context: GraphContext) {
-  const fieldState = state.get(field)
-
-  // this field is already visited and OK so mark as black
-  if (fieldState?.color === 'black') {
-    return
-  }
-
-  // this field is already visited and not OK so mark as gray
-  if (fieldState?.color === 'gray') {
-    throw new GraphError(`Circular dependency detected: ${field}`, state);
-  }
-
-  // mark as being visited
-  state.set(field, { color: 'gray' })
-
-  // visit children
-  const children = context.dependencyGraph.get(field)
-  if (children?.size) {
-    children.forEach(child => {
-      generateGraph(child, state, context)
-    })
-  }
-
-  // mark as visited and ok
-  state.set(field, { color: 'black' })
+  dependencies: Set<string> | undefined
 }
 
 export const useFieldStore = defineStore('fieldStore', {
@@ -59,22 +22,22 @@ export const useFieldStore = defineStore('fieldStore', {
     counter: 1,
     focusedField: "",
     resolvedValues: new Map<string, unknown>(),
-    dependencyGraph: new Map<string, Set<string>>(),
+    dependantsGraph: new Map<string, Set<string>>(),
     input: new Map<string, unknown>(),
     fields: new Map<string, FieldInformation | null>(),
   }),
   getters: {
     debugDependants: function(): { dependsOn: string, updatedBy: string } {
       const updatedBy: string[] = []
-      this.fieldAst?.references?.forEach(ref => {
-        const dependants = this.dependencyGraph.get(ref) ?? new Set()
+      this.fieldAst?.dependencies?.forEach(ref => {
+        const dependants = this.dependantsGraph.get(ref) ?? new Set()
         if (dependants.has(this.focusedField)) {
           updatedBy.push(ref)
         }
       })
 
       return {
-        dependsOn: [...this.fieldAst?.references ?? []].join(', '),
+        dependsOn: [...this.fieldAst?.dependencies ?? []].join(', '),
         updatedBy: [...updatedBy].join(', ')
       }
     },
@@ -132,7 +95,8 @@ export const useFieldStore = defineStore('fieldStore', {
     },
     updateInput(key: string, value: unknown) {
       this.input.set(key, value)
-      const dependents = this.dependencyGraph.get('input') ?? []
+      const dependents = this.dependantsGraph.get('input') ?? []
+
       dependents.forEach(dependent => {
         this.resolveField(dependent)
       })
@@ -148,7 +112,7 @@ export const useFieldStore = defineStore('fieldStore', {
         try {
           this.resolvedValues.set(field, resolver(target.tree))
 
-          const dependents = this.dependencyGraph.get(field) ?? []
+          const dependents = this.dependantsGraph.get(field) ?? []
           dependents.forEach(dependent => {
             this.resolveField(dependent)
           })
@@ -168,51 +132,30 @@ export const useFieldStore = defineStore('fieldStore', {
     },
     updateAst(field: string, ast: ParsedFormula) {
       const flattened = ast ? [...flatten(ast)] : []
-      const filtered = flattened
-        .filter(node => node.type === 'reference') as ParsedReference[]
-
-      const previousReferences = new Set(this.fields.get(field)?.references ?? [])
-      const newReferences = new Set(filtered.map(node => node.value.identifier))
-
-      // get previous references that are not in the new list
-      const toRemove = new Set([...previousReferences].filter(x => !newReferences.has(x)))
-
-      // remove references that are no longer used
-      toRemove.forEach(ref => {
-        const set = this.dependencyGraph.get(ref)
-        if (set) {
-          set.delete(field)
-
-          if (set.size === 0) {
-            this.dependencyGraph.delete(ref)
-          }
-        }
-      })
+      const dependencies = this.fields.get(field)?.dependencies ?? new Set()
 
       try {
-        generateGraph(field, new Map(), {
-          fields: this.fields,
-          dependencyGraph: this.dependencyGraph,
+        const { fieldDependencies, dependantsGraph } = generateDependantsGraph(field, dependencies, {
+          nodeList: flattened,
+          dependantsGraph: this.dependantsGraph
         })
+
+        this.dependantsGraph = dependantsGraph
+
+        this.fields.set(field, {
+          list: flattened,
+          tree: ast,
+          dependencies: fieldDependencies
+        })
+
+        this.resolveField(field)
       } catch (e) {
-        console.error(e)
-        return
+        if (e instanceof GraphError) {
+          console.error(e.message)
+        }
+
+        throw e
       }
-
-      // re-add references that are new, allow set to remove duplicates
-      newReferences.forEach(ref => {
-        const set = this.dependencyGraph.get(ref) ?? new Set()
-        set.add(field)
-        this.dependencyGraph.set(ref, set)
-      })
-
-      this.fields.set(field, {
-        list: flattened,
-        tree: ast,
-        references: newReferences
-      })
-
-      this.resolveField(field)
     },
     createNewField() {
       const id = `field${this.counter}`

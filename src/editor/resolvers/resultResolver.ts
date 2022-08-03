@@ -4,6 +4,7 @@ import {divide, multiply, pow, subtract, sum} from "mathjs";
 import { toResolvers, registeredFunctions } from '../functions'
 
 const functions = toResolvers(registeredFunctions)
+
 // parser should ensure that left and right are both resolvable to a number
 // if not then this will throw an error as we have bad input
 type OperationFn = (x: unknown, y: unknown) => number
