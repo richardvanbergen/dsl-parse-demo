@@ -11,9 +11,11 @@ import CategorizedNodes from './components/CategorizedNodes.vue'
 import ResolveOutput from './components/ResolveOutput.vue'
 import Dependants from './components/Dependants.vue'
 import Button from './components/Button.vue'
+import Card from "./components/Card.vue";
+import DependencyNode from "./components/DependencyNode.vue";
 
 const fieldStore = useFieldStore()
-const { fieldAst } = storeToRefs(fieldStore)
+const { fieldAst, focusedField } = storeToRefs(fieldStore)
 
 function handleFocusChange(fieldName: string) {
   fieldStore.setFocusedField(fieldName)
@@ -35,7 +37,7 @@ function toggleJsonView() {
     </template>
 
     <template #center v-if="viewJson">
-      <VueJsonPretty v-if="fieldAst" :data="{ parsed: fieldAst }" />
+      <VueJsonPretty v-if="fieldAst?.tree" :data="{ parsed: fieldAst.tree }" />
       <span v-else class="text-gray-400 text-lg">No Input!</span>
     </template>
 
@@ -43,6 +45,12 @@ function toggleJsonView() {
       <CategorizedNodes />
       <ResolveOutput />
       <Dependants />
+
+      <Card>
+        <template #content>
+          <DependencyNode :field-name="focusedField" />
+        </template>
+      </Card>
 
       <div>Required Field Inputs</div>
       <div>Traced Resolution</div>

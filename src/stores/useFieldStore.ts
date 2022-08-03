@@ -42,6 +42,10 @@ export const useFieldStore = defineStore('fieldStore', {
     fields: new Map<string, FieldInformation | null>(),
   }),
   getters: {
+    fieldDependencies: function (): string[] {
+      const set = this.fields.get(this.focusedField)?.dependencies ?? new Set()
+      return [...set]
+    },
     debugDependants: function(): { dependsOn: string, updatedBy: string } {
       const updatedBy: string[] = []
       this.fieldAst?.dependencies?.forEach(ref => {
@@ -75,7 +79,15 @@ export const useFieldStore = defineStore('fieldStore', {
         },
       ]
     },
-    formulaInput(): Record<string, unknown> {
+    cleanInput: function(): Record<string, unknown> {
+      const cleanInputs: Record<string, unknown> = {}
+      for (const [key, value] of Object.entries(Object.fromEntries(this.inputs.input))) {
+        cleanInputs[key] = value.value
+      }
+
+      return cleanInputs
+    },
+    cleanResolvedValues: function(): Record<string, unknown> {
       const resolvedValues = this.inputs.values
       const values = this.focusedField
         ? omit(Object.fromEntries(resolvedValues), this.focusedField)
@@ -86,14 +98,12 @@ export const useFieldStore = defineStore('fieldStore', {
         cleanValues[key] = value.value
       }
 
-      const cleanInputs: Record<string, unknown> = {}
-      for (const [key, value] of Object.entries(Object.fromEntries(this.inputs.input))) {
-        cleanInputs[key] = value.value
-      }
-
+      return cleanValues
+    },
+    formulaInput(): Record<string, unknown> {
       return {
-        input: cleanInputs,
-        ...cleanValues
+        input: this.cleanInput,
+        ...this.cleanResolvedValues
       }
     },
     resolvedOutput: function(): unknown | undefined {
