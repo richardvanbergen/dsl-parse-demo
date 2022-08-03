@@ -8,7 +8,7 @@ import type {
   ParsedReference
 } from './grammarTypes'
 
-type GraphState = Map<string, {
+export type GraphState = Map<string, {
   color: 'white' | 'gray' | 'black',
 }>
 

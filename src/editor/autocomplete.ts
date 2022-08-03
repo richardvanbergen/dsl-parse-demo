@@ -1,10 +1,10 @@
-import { syntaxTree } from '@codemirror/language'
-import { Completion, CompletionContext } from '@codemirror/autocomplete'
-import { EditorView } from 'codemirror'
+import {syntaxTree} from '@codemirror/language'
+import {Completion, CompletionContext} from '@codemirror/autocomplete'
+import {EditorView} from 'codemirror'
 import get from 'lodash/get'
 import isObject from 'lodash/isObject'
-import { registeredFunctions, toCompletions } from './functions'
-import { storeToRefs } from 'pinia'
+import {registeredFunctions, toCompletions} from './functions'
+import {storeToRefs} from 'pinia'
 
 const insertFunction = (view: EditorView, completion: Completion, from: number, to: number) => {
   const text = `${completion.label}`
@@ -64,48 +64,53 @@ function inspectObject(search: string, target = {}) {
     .filter(inputKey => inputKey.startsWith(search))
 }
 
-const getReferenceCompletions = async (text: string, inputs: Record<string, unknown>): Promise<{
+const getReferenceCompletions = (text: string, fieldName: string, inputs: Record<string, unknown>): {
   label: string,
   type: string,
   detail?: string,
   info?: string
-}[]> => {
-  return new Promise(async (resolve) => {
-    if (text.startsWith("$")) {
-      const items = text.slice(1).split(".").reduce((acc: string[], cur: string) => {
-        const startBracketIndex = cur.indexOf('[')
-        const endBracketIndex = cur.indexOf(']')
-
-        if (startBracketIndex !== -1 && endBracketIndex !== -1) {
-          const id = cur.slice(0, startBracketIndex)
-          const arrIndex = cur.slice(startBracketIndex + 1, endBracketIndex)
-          return [...acc, id, arrIndex]
-        }
-
-        return [...acc, cur]
-      },[])
-
-      switch (items.length) {
-        case 0:
-          return resolve(inspectObject("", inputs).map(key => ({ label: key, type: 'variable' })))
-        case 1:
-          return resolve(inspectObject(items[0], inputs).map(key => ({ label: key, type: 'variable' })))
-        default:
-          const target = get(inputs, items.slice(0, -1))
-          if (isObject(target)) {
-            return resolve(inspectObject(items.at(-1) ?? "", target).map(key => ({ label: key, type: 'variable' })))
-          }
-      }
-    } else {
-      const keys = [...Object.keys(inputs)]
-      const completions = [
-        ...(keys.map(key => ({label: `$${key}`, type: 'variable', detail: 'Node'}))),
-        ...toCompletions(registeredFunctions)
-      ]
-
-      resolve(completions)
+}[] => {
+  const filteredInputs: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(inputs)) {
+    if (key !== fieldName) {
+      filteredInputs[key] = value
     }
-  })
+  }
+
+  if (text.startsWith("$")) {
+    const items = text.slice(1).split(".").reduce((acc: string[], cur: string) => {
+      const startBracketIndex = cur.indexOf('[')
+      const endBracketIndex = cur.indexOf(']')
+
+      if (startBracketIndex !== -1 && endBracketIndex !== -1) {
+        const id = cur.slice(0, startBracketIndex)
+        const arrIndex = cur.slice(startBracketIndex + 1, endBracketIndex)
+        return [...acc, id, arrIndex]
+      }
+
+      return [...acc, cur]
+    },[])
+
+    switch (items.length) {
+      case 0:
+        return inspectObject("", filteredInputs).map(key => ({ label: key, type: 'variable' }))
+      case 1:
+        return inspectObject(items[0], filteredInputs).map(key => ({ label: key, type: 'variable' }))
+      default:
+        const target = get(filteredInputs, items.slice(0, -1))
+        if (isObject(target)) {
+          return inspectObject(items.at(-1) ?? "", target).map(key => ({ label: key, type: 'variable' }))
+        }
+    }
+  } else {
+    const keys = [...Object.keys(filteredInputs)]
+    return [
+      ...(keys.map(key => ({label: `$${key}`, type: 'variable', detail: 'Node'}))),
+      ...toCompletions(registeredFunctions)
+    ]
+  }
+
+  return []
 }
 
 export async function autocomplete(context: CompletionContext) {
@@ -115,7 +120,7 @@ export async function autocomplete(context: CompletionContext) {
   const isReferenceChild = nodeBefore.parent?.name === "Reference" && nodeBefore.name === "Identifier"
 
   const { useFieldStore } = await import('../stores/useFieldStore')
-  const { formulaInput } = storeToRefs(useFieldStore())
+  const { focusedField, formulaInput } = storeToRefs(useFieldStore())
 
   if (isReferenceNode || isReferenceChild) {
     const parentObj = nodeBefore.parent
@@ -124,7 +129,7 @@ export async function autocomplete(context: CompletionContext) {
     return {
       from: word?.from,
       options: [
-        ...(await getReferenceCompletions(content, formulaInput.value)).map(f => (
+        ...getReferenceCompletions(content, focusedField.value, formulaInput.value).map(f => (
           {
             label: f.label,
             info: f.info,
@@ -146,7 +151,7 @@ export async function autocomplete(context: CompletionContext) {
     return {
       from: word?.from,
       options: [
-        ...(await getReferenceCompletions(content, formulaInput.value)).map(f => (
+        ...getReferenceCompletions(content, focusedField.value, formulaInput.value).map(f => (
           {
             label: f.label,
             detail: f.detail,

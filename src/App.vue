@@ -11,11 +11,9 @@ import CategorizedNodes from './components/CategorizedNodes.vue'
 import ResolveOutput from './components/ResolveOutput.vue'
 import Dependants from './components/Dependants.vue'
 import Button from './components/Button.vue'
-import Card from "./components/Card.vue";
-import DependencyNode from "./components/DependencyNode.vue";
 
 const fieldStore = useFieldStore()
-const { fieldAst, focusedField } = storeToRefs(fieldStore)
+const { fieldAst } = storeToRefs(fieldStore)
 
 function handleFocusChange(fieldName: string) {
   fieldStore.setFocusedField(fieldName)
@@ -45,18 +43,6 @@ function toggleJsonView() {
       <CategorizedNodes />
       <ResolveOutput />
       <Dependants />
-
-      <Card>
-        <template #content>
-          <DependencyNode :field-name="focusedField" />
-        </template>
-      </Card>
-
-      <div>Required Field Inputs</div>
-      <div>Traced Resolution</div>
-      <div>Global Error Tracking</div>
-      <div>Automatic Value Resolution</div>
-      <div>Inline Error Highlighting for Resolved Values</div>
     </template>
   </Layout>
 </template>

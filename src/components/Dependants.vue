@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import Card from './Card.vue'
+import DependencyNode from './DependencyNode.vue'
 import { useFieldStore } from '../stores/useFieldStore'
 import {storeToRefs} from "pinia";
 
-const { debugDependants } = storeToRefs(useFieldStore())
+const { debugDependants, focusedField } = storeToRefs(useFieldStore())
 </script>
 
 <template>
@@ -29,6 +30,10 @@ const { debugDependants } = storeToRefs(useFieldStore())
 
           {{ debugDependants.updatedBy }}
         </div>
+      </div>
+
+      <div class="mt-4 bg-slate-700 rounded p-4 pb-2">
+        <DependencyNode :field-name="focusedField" />
       </div>
     </template>
   </Card>

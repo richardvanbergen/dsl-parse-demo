@@ -8,7 +8,7 @@ const props = defineProps<{
 }>()
 
 const fieldStore = useFieldStore()
-const { fields, cleanInput, inputs } = storeToRefs(fieldStore)
+const { fields, cleanInput, inputs, circularReferenceDetected } = storeToRefs(fieldStore)
 
 const dependencies = computed(() => fields.value.get(props.fieldName)?.dependencies ?? [])
 
@@ -18,12 +18,13 @@ const inputValue = computed(() => {
     : inputs.value.values.get(props.fieldName)
 
   if (reference) {
-    console.log(props.fieldName, reference)
     return reference
   }
 
   return null
 })
+
+
 </script>
 
 <template>
@@ -35,7 +36,7 @@ const inputValue = computed(() => {
     </span>
   </div>
 
-  <div v-for="dependency of dependencies" class="ml-4">
+  <div v-for="dependency of dependencies" class="ml-4" v-if="circularReferenceDetected === false">
     <DependencyNode :field-name="dependency" />
   </div>
 </template>

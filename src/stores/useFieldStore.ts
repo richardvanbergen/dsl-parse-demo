@@ -19,8 +19,7 @@ import {
   createResultResolver
 } from '../editor/resolvers'
 
-import { Inputs, ResolvedValue } from "../editor/resolve";
-import {omit} from "lodash";
+import { Inputs, ResolvedValue } from "../editor/resolve"
 
 type FieldInformation = {
   list: ParsedGrammar[] | undefined
@@ -32,6 +31,7 @@ export const useFieldStore = defineStore('fieldStore', {
   state: () => ({
     counter: 1,
     focusedField: "",
+    circularReferenceDetected: false,
     dependantsGraph: new Map<string, Set<string>>(),
 
     inputs: {
@@ -89,9 +89,7 @@ export const useFieldStore = defineStore('fieldStore', {
     },
     cleanResolvedValues: function(): Record<string, unknown> {
       const resolvedValues = this.inputs.values
-      const values = this.focusedField
-        ? omit(Object.fromEntries(resolvedValues), this.focusedField)
-        : Object.fromEntries(resolvedValues)
+      const values = Object.fromEntries(resolvedValues)
 
       const cleanValues: Record<string, unknown> = {}
       for (const [key, value] of Object.entries(values)) {
@@ -149,15 +147,19 @@ export const useFieldStore = defineStore('fieldStore', {
     },
     resolveField(field: string) {
       const target = this.fields.get(field)
+      console.log(field)
       if (target?.tree) {
         try {
           validateDependantsGraph(field, this.dependantsGraph)
+          this.circularReferenceDetected = false
         } catch (e) {
           if (e instanceof GraphValidationError) {
             this.inputs.values.set(field, {
               value: null,
               error: e.message,
             })
+
+            this.circularReferenceDetected = true
             return
           }
 
@@ -167,8 +169,10 @@ export const useFieldStore = defineStore('fieldStore', {
         const resolver = createResultResolver(this.formulaInput)
 
         try {
+          const value = resolver(target.tree)
+          console.log({ value, tree: target.tree, input: this.formulaInput })
           this.inputs.values.set(field, {
-            value: resolver(target.tree)
+            value
           })
 
           const dependents = this.dependantsGraph.get(field) ?? []
