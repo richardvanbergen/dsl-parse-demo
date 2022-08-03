@@ -10,6 +10,7 @@ import Fields from './components/Fields.vue'
 import CategorizedNodes from './components/CategorizedNodes.vue'
 import ResolveOutput from './components/ResolveOutput.vue'
 import Dependants from './components/Dependants.vue'
+import Input from './components/Input.vue'
 import Button from './components/Button.vue'
 
 const fieldStore = useFieldStore()
@@ -41,8 +42,9 @@ function toggleJsonView() {
 
     <template #right>
       <CategorizedNodes />
-      <ResolveOutput />
+      <Input />
       <Dependants />
+      <ResolveOutput />
     </template>
   </Layout>
 </template>

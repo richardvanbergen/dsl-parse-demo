@@ -13,7 +13,7 @@ const { debugDependants, focusedField } = storeToRefs(useFieldStore())
       Dependants
       <p class="text-gray-500 text-sm">These values should always remain in sync if everything is working</p>
     </template>
-    <template #content>
+    <template #content v-if="debugDependants.dependsOn && debugDependants.updatedBy">
       <div class="flex">
         <div class="flex-1">
           <h4 class="text-gray-400">

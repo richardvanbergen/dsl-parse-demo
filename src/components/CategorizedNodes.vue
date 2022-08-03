@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import { storeToRefs } from "pinia"
-import { isPrimitive, isGrammarType, ParsedFunction, ParsedReference, ParsedGrammar } from "../editor/parser"
+import { isPrimitive, isGrammarType } from "../editor/parser"
+import type { ParsedFunction, ParsedReference, ParsedGrammar } from "../editor/grammarTypes"
 import {useFieldStore} from "../stores/useFieldStore"
 import Card from "./Card.vue";
 
 const fieldStore = useFieldStore()
-const { categorizedNodes, input, resolvedValues } = storeToRefs(fieldStore)
+const { categorizedNodes } = storeToRefs(fieldStore)
 
 function isParsedFunction(node: ParsedGrammar): node is ParsedFunction {
   return isGrammarType<ParsedFunction>(node, 'function')
@@ -35,7 +36,7 @@ const colorMap = {
       Categorized Nodes
     </template>
 
-    <template #content>
+    <template #content v-if="categorizedNodes.size > 0">
       <ul role="list" class="grid grid-cols-1 gap-5 sm:gap-4 sm:grid-cols-2">
         <li v-for="(nodes, type) of Object.fromEntries(categorizedNodes)" :key="type" class="col-span-1 flex shadow-sm rounded-md">
           <div :class="[colorMap[type] ?? 'bg-gray-500', 'flex-shrink-0 flex items-center justify-center w-16 text-white text-sm font-medium rounded-l-md']">

@@ -3,6 +3,12 @@ import { max, min, round } from "mathjs";
 export const registeredFunctions = new Map<string, {
   info?: string,
   detail?: string,
+  inputs?: {
+    name: string,
+    label: string,
+    uiType: string,
+    resolveType: 'string' | 'number' | 'boolean',
+  }[],
   fn: (value: unknown[]) => unknown
 }>()
 
@@ -30,6 +36,22 @@ registeredFunctions.set('ROUND', {
   },
   info: "ROUND(value: number, precision: number)",
   detail: 'Rounds a value to a given precision',
+})
+
+registeredFunctions.set('TEST_INPUTS', {
+  fn: () => {
+    return 0
+  },
+  info: "TEST_INPUTS()",
+  detail: 'Test adding inputs dynamically to data model',
+  inputs: [
+    {
+      name: 'input1',
+      label: 'Input 1',
+      uiType: 'text',
+      resolveType: 'string'
+    },
+  ]
 })
 
 registeredFunctions.set('STRING_REPLACE', {

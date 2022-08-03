@@ -2,7 +2,7 @@ import { acceptHMRUpdate, defineStore } from 'pinia'
 
 import type {
   GrammarType,
-  ParsedFormula,
+  ParsedFormula, ParsedFunction,
   ParsedGrammar
 } from '../editor/grammarTypes'
 
@@ -20,6 +20,7 @@ import {
 } from '../editor/resolvers'
 
 import { Inputs, ResolvedValue } from "../editor/resolve"
+import {isGrammarType} from "../editor/parser";
 
 type FieldInformation = {
   list: ParsedGrammar[] | undefined
@@ -32,6 +33,7 @@ export const useFieldStore = defineStore('fieldStore', {
     counter: 1,
     focusedField: "",
     circularReferenceDetected: false,
+    referencedFunctions: new Set<string>(),
     dependantsGraph: new Map<string, Set<string>>(),
 
     inputs: {
@@ -188,6 +190,12 @@ export const useFieldStore = defineStore('fieldStore', {
     },
     updateAst(field: string, ast: ParsedFormula) {
       const flattened = ast ? [...flatten(ast)] : []
+
+      flattened.forEach(node => {
+        if (isGrammarType<ParsedFunction>(node, 'function')) {
+          this.referencedFunctions.add(node.value.name)
+        }
+      })
 
       const previousDependencies = this.fields.get(field)?.dependencies ?? new Set()
       const currentDependencies = getFieldDependencies(flattened)
