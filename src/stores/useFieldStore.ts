@@ -7,17 +7,21 @@ import type {
 } from '../editor/grammarTypes'
 
 import {
-  generateDependantsGraph,
   flatten,
-  GraphError
+  getFieldDependencies,
+  updateDependantsGraph,
+  validateDependantsGraph,
+  GraphValidationError,
 } from '../editor/ast'
 
 import {
   stringResolver,
   createResultResolver,
   ArithmeticError,
-  FunctionError
+  FunctionError,
 } from '../editor/resolvers'
+
+import { Inputs, ResolvedValue } from "../editor/resolve";
 
 type FieldInformation = {
   list: ParsedGrammar[] | undefined
@@ -29,9 +33,13 @@ export const useFieldStore = defineStore('fieldStore', {
   state: () => ({
     counter: 1,
     focusedField: "",
-    resolvedValues: new Map<string, unknown>(),
     dependantsGraph: new Map<string, Set<string>>(),
-    input: new Map<string, unknown>(),
+
+    inputs: {
+      input: new Map<string, ResolvedValue>(),
+      values: new Map<string, ResolvedValue>(),
+    } as Inputs,
+
     fields: new Map<string, FieldInformation | null>(),
   }),
   getters: {
@@ -69,7 +77,7 @@ export const useFieldStore = defineStore('fieldStore', {
       ]
     },
     resolvedOutput: function(): unknown | undefined {
-      return this.resolvedValues.get(this.focusedField)
+      return this.inputs.values.get(this.focusedField)
     },
     compiledOutput: function(): string {
       const ast = this.fieldAst
@@ -102,7 +110,7 @@ export const useFieldStore = defineStore('fieldStore', {
       this.focusedField = field
     },
     updateInput(key: string, value: unknown) {
-      this.input.set(key, value)
+      this.inputs.input.set(key, { value })
       const dependents = this.dependantsGraph.get('input') ?? []
 
       dependents.forEach(dependent => {
@@ -112,13 +120,26 @@ export const useFieldStore = defineStore('fieldStore', {
     resolveField(field: string) {
       const target = this.fields.get(field)
       if (target?.tree) {
-        const resolver = createResultResolver({
-          ...Object.fromEntries(this.resolvedValues),
-          input: Object.fromEntries(this.input)
-        })
+        try {
+          validateDependantsGraph(field, this.dependantsGraph)
+        } catch (e) {
+          if (e instanceof GraphValidationError) {
+            this.inputs.values.set(field, {
+              value: null,
+              error: e.message,
+            })
+            return
+          }
+
+          throw e
+        }
+
+        const resolver = createResultResolver(this.inputs)
 
         try {
-          this.resolvedValues.set(field, resolver(target.tree))
+          this.inputs.values.set(field, {
+            value: resolver(target.tree)
+          })
 
           const dependents = this.dependantsGraph.get(field) ?? []
           dependents.forEach(dependent => {
@@ -126,11 +147,11 @@ export const useFieldStore = defineStore('fieldStore', {
           })
         } catch (e) {
           if (e instanceof ArithmeticError) {
-            this.resolvedValues.set(field, e.message)
+            this.inputs.values.set(field, { value: null, error: e.message })
             return
           }
           if (e instanceof FunctionError) {
-            this.resolvedValues.set(field, e.message)
+            this.inputs.values.set(field, { value: null, error: e.message })
             return
           }
 
@@ -140,34 +161,24 @@ export const useFieldStore = defineStore('fieldStore', {
     },
     updateAst(field: string, ast: ParsedFormula) {
       const flattened = ast ? [...flatten(ast)] : []
-      const dependencies = this.fields.get(field)?.dependencies ?? new Set()
 
-      try {
-        const { fieldDependencies, dependantsGraph } = generateDependantsGraph(field, dependencies, {
-          nodeList: flattened,
-          dependantsGraph: this.dependantsGraph
-        })
+      const previousDependencies = this.fields.get(field)?.dependencies ?? new Set()
+      const currentDependencies = getFieldDependencies(flattened)
 
-        this.dependantsGraph = dependantsGraph
+      this.dependantsGraph = updateDependantsGraph(field, previousDependencies, currentDependencies, this.dependantsGraph)
 
-        this.fields.set(field, {
-          list: flattened,
-          tree: ast,
-          dependencies: fieldDependencies
-        })
+      this.fields.set(field, {
+        list: flattened,
+        tree: ast,
+        dependencies: currentDependencies
+      })
 
-        this.resolveField(field)
-      } catch (e) {
-        if (e instanceof GraphError) {
-          console.error(e.message)
-        }
-
-        throw e
-      }
+      this.resolveField(field)
     },
     createNewField() {
       const id = `field${this.counter}`
       this.fields.set(id, null)
+      this.inputs.values.set(id, { value: null })
       this.counter++
     },
   },

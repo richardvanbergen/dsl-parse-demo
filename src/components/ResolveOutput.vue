@@ -23,7 +23,7 @@ const { debugOutput } = storeToRefs(fieldStore)
             <div class="flex-1 px-4 py-2 text-sm truncate">
               <p class="text-gray-900 font-medium hover:text-gray-600">{{ output.name }}</p>
               <p class="text-gray-400 font-medium hover:text-gray-400">{{ output.description }}</p>
-              <p class="text-gray-500">{{ output.value }}</p>
+              <p v-if="output.value" :class="output.value.error ? 'text-red-700' : 'text-gray-800'">{{ output.value.error ?? output.value.value }}</p>
             </div>
           </div>
         </li>

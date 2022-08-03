@@ -15,6 +15,16 @@ import type {
   ParsedNumber
 } from './grammarTypes'
 
+export type ResolvedValue = {
+  value: unknown,
+  error?: string
+}
+
+export type Inputs = {
+  input: Map<string, ResolvedValue>
+  values: Map<string, ResolvedValue>
+}
+
 type Reducers = {
   function: (name: string, params: unknown[]) => unknown,
   primitive: (value: string | boolean | number) => unknown,

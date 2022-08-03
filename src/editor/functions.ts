@@ -50,7 +50,7 @@ registeredFunctions.set('JSON', {
     }
   },
   info: "JSON(json_stringified: string)",
-  detail: 'Replaces all "%" in a string with a value',
+  detail: 'Get the value of a JSON string',
 })
 
 export function toResolvers(functions: typeof registeredFunctions) {

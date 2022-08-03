@@ -1,4 +1,4 @@
-import {createResolver} from "../resolve";
+import { createResolver, Inputs } from "../resolve";
 import get from "lodash/get";
 import {divide, multiply, pow, subtract, sum} from "mathjs";
 import { toResolvers, registeredFunctions } from '../functions'
@@ -43,7 +43,7 @@ export class FunctionError extends Error {
   }
 }
 
-export const createResultResolver = (inputValues: { input: Record<string, unknown> }) => {
+export const createResultResolver = (inputValues: Inputs) => {
   return createResolver<unknown>({
     function: (name, params) => {
       const toRun = functions.get(name)

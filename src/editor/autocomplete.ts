@@ -1,10 +1,11 @@
 import { syntaxTree } from '@codemirror/language'
 import { Completion, CompletionContext } from '@codemirror/autocomplete'
 import { EditorView } from 'codemirror'
-import { get, isObject } from 'lodash'
+import {get, isObject, omit} from 'lodash'
 import { registeredFunctions, toCompletions } from './functions'
 import { storeToRefs } from 'pinia'
-import {Ref} from "vue";
+import { Ref } from "vue";
+import {Inputs} from "./resolve";
 
 const insertFunction = (view: EditorView, completion: Completion, from: number, to: number) => {
   const text = `${completion.label}`
@@ -64,16 +65,17 @@ function inspectObject(search: string, target = {}) {
     .filter(inputKey => inputKey.startsWith(search))
 }
 
-const getReferenceCompletions = async (text: string, currentField: Ref<string>, input: Ref<Map<string, unknown>>, resolvedValues: Ref<Map<string, unknown>>): Promise<{
+const getReferenceCompletions = async (text: string, currentField: Ref<string>, inputs: Ref<Inputs>): Promise<{
   label: string,
   type: string,
   detail?: string,
   info?: string
 }[]> => {
   return new Promise(async (resolve) => {
-    const inputs = {
-      input: { ...Object.fromEntries(input.value) },
-      ...Object.fromEntries(resolvedValues.value)
+    const values = omit(Object.fromEntries(inputs.value.values), currentField.value)
+    const inputCompletions = {
+      input: { ...Object.fromEntries(inputs.value.input) },
+      ...values
     }
 
     if (text.startsWith("$")) {
@@ -92,19 +94,19 @@ const getReferenceCompletions = async (text: string, currentField: Ref<string>, 
 
       switch (items.length) {
         case 0:
-          return resolve(inspectObject("", inputs).map(key => ({ label: key, type: 'variable' })))
+          return resolve(inspectObject("", inputCompletions).map(key => ({ label: key, type: 'variable' })))
         case 1:
-          return resolve(inspectObject(items[0], inputs).map(key => ({ label: key, type: 'variable' })))
+          return resolve(inspectObject(items[0], inputCompletions).map(key => ({ label: key, type: 'variable' })))
         default:
-          const target = get(inputs, items.slice(0, -1))
+          const target = get(inputCompletions, items.slice(0, -1))
           if (isObject(target)) {
             return resolve(inspectObject(items.at(-1) ?? "", target).map(key => ({ label: key, type: 'variable' })))
           }
       }
     } else {
-      const keys = [...Object.keys(inputs)].filter(key => key !== currentField.value)
+      const keys = [...Object.keys(inputCompletions)].filter(key => key !== currentField.value)
       const completions = [
-        ...([keys].map(key => ({label: `$${key}`, type: 'variable', detail: 'Node'}))),
+        ...(keys.map(key => ({label: `$${key}`, type: 'variable', detail: 'Node'}))),
         ...toCompletions(registeredFunctions)
       ]
 
@@ -120,15 +122,16 @@ export async function autocomplete(context: CompletionContext) {
   const isReferenceChild = nodeBefore.parent?.name === "Reference" && nodeBefore.name === "Identifier"
 
   const { useFieldStore } = await import('../stores/useFieldStore')
-  const { focusedField, input, resolvedValues } = storeToRefs(useFieldStore())
+  const { focusedField, inputs } = storeToRefs(useFieldStore())
 
   if (isReferenceNode || isReferenceChild) {
     const parentObj = nodeBefore.parent
     const content = context.state.sliceDoc(parentObj?.from, parentObj?.to)
+
     return {
       from: word?.from,
       options: [
-        ...(await getReferenceCompletions(content, focusedField, input, resolvedValues)).map(f => (
+        ...(await getReferenceCompletions(content, focusedField, inputs)).map(f => (
           {
             label: f.label,
             info: f.info,
@@ -150,7 +153,7 @@ export async function autocomplete(context: CompletionContext) {
     return {
       from: word?.from,
       options: [
-        ...(await getReferenceCompletions(content, focusedField, input, resolvedValues)).map(f => (
+        ...(await getReferenceCompletions(content, focusedField, inputs)).map(f => (
           {
             label: f.label,
             detail: f.detail,

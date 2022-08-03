@@ -1,6 +1,12 @@
 import {
-  flatten,
   parse,
+} from "./parser"
+
+import {
+  flatten
+} from './ast'
+
+import {
   ParsedArithmetic,
   ParsedBoolean,
   ParsedFormula,
@@ -9,7 +15,7 @@ import {
   ParsedOperator,
   ParsedReference,
   ParsedString
-} from "./parser"
+} from "./grammarTypes"
 
 import { expect, test } from 'vitest'
 

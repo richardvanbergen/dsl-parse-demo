@@ -12,14 +12,18 @@ type GraphState = Map<string, {
   color: 'white' | 'gray' | 'black',
 }>
 
-export class GraphError extends Error {
-  constructor(message: string, graphState: GraphState) {
-    console.log(graphState)
-    super(message + '\n' + JSON.stringify(graphState, null, 2))
+export class GraphValidationError extends Error {
+  state: GraphState
+  dependentsGraph: Map<string, Set<string>>
+
+  constructor(message: string, graphState: GraphState, dependentsGraph: Map<string, Set<string>>) {
+    super(message)
+    this.state = graphState
+    this.dependentsGraph = dependentsGraph
   }
 }
 
-function checkCircularDeps(field: string, state: GraphState, dependencyGraph: Map<string, Set<string>>) {
+export function validateDependantsGraph(field: string, dependentsGraph: Map<string, Set<string>>, state: GraphState = new Map()) {
   const fieldState = state.get(field)
 
   // this field is already visited and OK so mark as black
@@ -29,17 +33,21 @@ function checkCircularDeps(field: string, state: GraphState, dependencyGraph: Ma
 
   // this field is already visited and not OK so mark as gray
   if (fieldState?.color === 'gray') {
-    throw new GraphError(`Circular dependency detected: ${field}`, state);
+    throw new GraphValidationError(
+      `Circular dependency detected: ${field}`,
+      state,
+      dependentsGraph
+    )
   }
 
   // mark as being visited
   state.set(field, { color: 'gray' })
 
   // visit children
-  const children = dependencyGraph.get(field)
+  const children = dependentsGraph.get(field)
   if (children?.size) {
     children.forEach(child => {
-      checkCircularDeps(child, state, dependencyGraph)
+      validateDependantsGraph(child, dependentsGraph, state)
     })
   }
 
@@ -47,37 +55,32 @@ function checkCircularDeps(field: string, state: GraphState, dependencyGraph: Ma
   state.set(field, { color: 'black' })
 }
 
-export function generateDependantsGraph(fieldName: string, currentDependencies: Set<string>, context: {
-  nodeList: ParsedGrammar[],
-  dependantsGraph: Map<string, Set<string>>,
-}) {
-  const astReferences = context.nodeList.filter(node => node.type === 'reference') as ParsedReference[]
-  const newReferences = new Set(astReferences.map(node => node.value.identifier))
-  const toRemove = new Set([...currentDependencies].filter(x => !newReferences.has(x)))
+export function getFieldDependencies(nodeList: ParsedGrammar[]) {
+  const astReferences = nodeList.filter(node => node.type === 'reference') as ParsedReference[]
+  return new Set(astReferences.map(node => node.value.identifier))
+}
+
+export function updateDependantsGraph(fieldName: string, previousDependencies: Set<string>, currentDependencies: Set<string>, dependantsGraph: Map<string, Set<string>>) {
+  const toRemove = new Set([...previousDependencies].filter(x => !currentDependencies.has(x)))
 
   toRemove.forEach(ref => {
-    const set = context.dependantsGraph.get(ref)
+    const set = dependantsGraph.get(ref)
     if (set) {
       set.delete(ref)
 
       if (set.size === 0) {
-        context.dependantsGraph.delete(ref)
+        dependantsGraph.delete(ref)
       }
     }
   })
 
-  newReferences.forEach(ref => {
-    const set = context.dependantsGraph.get(ref) ?? new Set()
+  currentDependencies.forEach(ref => {
+    const set = dependantsGraph.get(ref) ?? new Set()
     set.add(fieldName)
-    context.dependantsGraph.set(ref, set)
+    dependantsGraph.set(ref, set)
   })
 
-  checkCircularDeps(fieldName, new Map(), context.dependantsGraph)
-
-  return {
-    fieldDependencies: newReferences,
-    dependantsGraph: context.dependantsGraph
-  }
+  return dependantsGraph
 }
 
 export function *flatten(ast: ParsedGrammar): IterableIterator<ParsedGrammar> {
