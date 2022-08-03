@@ -1,15 +1,23 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 
 import {
-  flatten,
-  generateDependantsGraph,
   GrammarType,
-  GraphError,
   ParsedFormula,
   ParsedGrammar
 } from '../editor/parser'
 
-import { stringResolver, createResultResolver, ArithmeticError, FunctionError } from '../editor/resolvers'
+import {
+  generateDependantsGraph,
+  flatten,
+  GraphError
+} from '../editor/ast'
+
+import {
+  stringResolver,
+  createResultResolver,
+  ArithmeticError,
+  FunctionError
+} from '../editor/resolvers'
 
 type FieldInformation = {
   list: ParsedGrammar[] | undefined
