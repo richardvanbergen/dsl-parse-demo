@@ -82,6 +82,35 @@ test("can match identifier", () => {
 
 test("can match comparison", () => {
   const result = lexer.reset(`==`).next()
-  expect(result?.type).toBe('comparison')
+  expect(result?.type).toBe('equals')
+})
+
+test("can match not comparison", () => {
+  const result = lexer.reset(`!=`).next()
+  expect(result?.type).toBe('not_equals')
+})
+
+test("can match less than", () => {
+  const result = lexer.reset(`<`).next()
+  expect(result?.type).toBe('lt')
+})
+
+
+test("can match greater than", () => {
+  const result = lexer.reset(`>`).next()
+  expect(result?.type).toBe('gt')
+})
+
+
+
+test("can match less than or equal to", () => {
+  const result = lexer.reset(`<=`).next()
+  expect(result?.type).toBe('lte')
+})
+
+
+test("can match greater than or equal to", () => {
+  const result = lexer.reset(`>=`).next()
+  expect(result?.type).toBe('gte')
 })
 

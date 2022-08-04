@@ -11,7 +11,12 @@ declare var times: any;
 declare var divide: any;
 declare var exponent: any;
 declare var number: any;
-declare var comparison: any;
+declare var equals: any;
+declare var not_equals: any;
+declare var lt: any;
+declare var lte: any;
+declare var gt: any;
+declare var gte: any;
 declare var reference: any;
 declare var identifier: any;
 declare var string: any;
@@ -37,6 +42,7 @@ function comparisonPost(data: any) {
         type: 'comparison',
         value: {
             a: data[0],
+            operator: data[2],
             b: data[4],
         }
     }
@@ -202,10 +208,16 @@ const grammar: Grammar = {
     {"name": "comparison$ebnf$1", "symbols": ["comparison$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "comparison$ebnf$2", "symbols": []},
     {"name": "comparison$ebnf$2", "symbols": ["comparison$ebnf$2", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "comparison", "symbols": ["comparable", "comparison$ebnf$1", (lexer.has("comparison") ? {type: "comparison"} : comparison), "comparison$ebnf$2", "comparable"], "postprocess": comparisonPost},
+    {"name": "comparison", "symbols": ["comparable", "comparison$ebnf$1", "comparison_operator", "comparison$ebnf$2", "comparable"], "postprocess": comparisonPost},
     {"name": "comparable", "symbols": ["number"], "postprocess": id},
     {"name": "comparable", "symbols": ["boolean"], "postprocess": id},
     {"name": "comparable", "symbols": ["string"], "postprocess": id},
+    {"name": "comparison_operator", "symbols": [(lexer.has("equals") ? {type: "equals"} : equals)], "postprocess": id},
+    {"name": "comparison_operator", "symbols": [(lexer.has("not_equals") ? {type: "not_equals"} : not_equals)], "postprocess": id},
+    {"name": "comparison_operator", "symbols": [(lexer.has("lt") ? {type: "lt"} : lt)], "postprocess": id},
+    {"name": "comparison_operator", "symbols": [(lexer.has("lte") ? {type: "lte"} : lte)], "postprocess": id},
+    {"name": "comparison_operator", "symbols": [(lexer.has("gt") ? {type: "gt"} : gt)], "postprocess": id},
+    {"name": "comparison_operator", "symbols": [(lexer.has("gte") ? {type: "gte"} : gte)], "postprocess": id},
     {"name": "reference", "symbols": [(lexer.has("reference") ? {type: "reference"} : reference)], "postprocess": referencePost},
     {"name": "identifier", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": id},
     {"name": "string", "symbols": [(lexer.has("string") ? {type: "string"} : string)], "postprocess": id},

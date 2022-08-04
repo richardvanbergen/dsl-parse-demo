@@ -51,6 +51,36 @@ export interface ParsedExponent extends ParsedPrimitive {
   value: '^'
 }
 
+export interface ParsedEquals extends ParsedPrimitive {
+  type: 'equals'
+  value: '=='
+}
+
+export interface ParsedNotEquals extends ParsedPrimitive {
+  type: 'not_equals'
+  value: '=='
+}
+
+export interface ParsedLessThan extends ParsedPrimitive {
+  type: 'lt'
+  value: '<'
+}
+
+export interface ParsedGreaterThan extends ParsedPrimitive {
+  type: 'gt'
+  value: '>'
+}
+
+export interface ParsedLessThanOrEqualTo extends ParsedPrimitive {
+  type: 'lte'
+  value: '<='
+}
+
+export interface ParsedGreaterThanOrEqualTo extends ParsedPrimitive {
+  type: 'gte'
+  value: '>='
+}
+
 export interface ParsedString extends ParsedPrimitive {
   type: 'string'
   value: string
@@ -74,10 +104,13 @@ export interface ParsedFunction extends ParsedGrammar {
 
 export type ParsedOperator = ParsedPlus | ParsedMinus | ParsedTimes | ParsedDivide | ParsedExponent
 
+export type ParsedComparator = ParsedEquals | ParsedNotEquals | ParsedLessThan | ParsedGreaterThan | ParsedLessThanOrEqualTo | ParsedGreaterThanOrEqualTo
+
 export interface ParsedComparison extends ParsedGrammar {
   type: 'comparison'
   value: {
     a: ParsedArithmetic | ParsedNumber | ParsedReference
+    operator: ParsedComparator
     b: ParsedArithmetic | ParsedNumber | ParsedReference
   }
 }

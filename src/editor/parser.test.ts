@@ -8,7 +8,7 @@ import {
 
 import {
   ParsedArithmetic,
-  ParsedBoolean, ParsedComparison,
+  ParsedBoolean, ParsedComparator, ParsedComparison,
   ParsedFormula,
   ParsedFunction,
   ParsedNumber,
@@ -399,9 +399,11 @@ test("can make a comparison", () => {
 
   const comparison = ast.value as ParsedComparison
   const a = comparison.value.a as ParsedNumber
+  const operation = comparison.value.operator as ParsedComparator
   const b = comparison.value.b as ParsedArithmetic
 
   expect(a.value).toBe(1)
+  expect(operation.value).toBe("==")
   expect(b.value).toBe(2)
 })
 
@@ -410,9 +412,11 @@ test("can compare booleans", () => {
 
   const comparison = ast.value as ParsedComparison
   const a = comparison.value.a as ParsedNumber
+  const operation = comparison.value.operator as ParsedComparator
   const b = comparison.value.b as ParsedArithmetic
 
   expect(a.value).toBe(true)
+  expect(operation.value).toBe("==")
   expect(b.value).toBe(2)
 })
 
@@ -421,9 +425,76 @@ test("can compare strings", () => {
 
   const comparison = ast.value as ParsedComparison
   const a = comparison.value.a as ParsedNumber
+  const operation = comparison.value.operator as ParsedComparator
   const b = comparison.value.b as ParsedArithmetic
 
   expect(a.value).toBe("true")
+  expect(operation.value).toBe("==")
+  expect(b.value).toBe(2)
+})
+
+test("can compare greater than", () => {
+  const ast = parse('=1 > 2') as ParsedFormula
+
+  const comparison = ast.value as ParsedComparison
+  const a = comparison.value.a as ParsedNumber
+  const operator = comparison.value.operator as ParsedComparator
+  const b = comparison.value.b as ParsedNumber
+
+  expect(a.value).toBe(1)
+  expect(operator.value).toBe(">")
+  expect(b.value).toBe(2)
+})
+
+test("can compare less than", () => {
+  const ast = parse('=1 < 2') as ParsedFormula
+
+  const comparison = ast.value as ParsedComparison
+  const a = comparison.value.a as ParsedNumber
+  const operator = comparison.value.operator as ParsedComparator
+  const b = comparison.value.b as ParsedNumber
+
+  expect(a.value).toBe(1)
+  expect(operator.value).toBe("<")
+  expect(b.value).toBe(2)
+})
+
+test("can compare greater than or equal", () => {
+  const ast = parse('=1 >= 2') as ParsedFormula
+
+  const comparison = ast.value as ParsedComparison
+  const a = comparison.value.a as ParsedNumber
+  const operator = comparison.value.operator as ParsedComparator
+  const b = comparison.value.b as ParsedNumber
+
+  expect(a.value).toBe(1)
+  expect(operator.value).toBe(">=")
+  expect(b.value).toBe(2)
+})
+
+test("can compare less than or equal", () => {
+  const ast = parse('=1 <= 2') as ParsedFormula
+
+  const comparison = ast.value as ParsedComparison
+  const a = comparison.value.a as ParsedNumber
+  const operator = comparison.value.operator as ParsedComparator
+  const b = comparison.value.b as ParsedNumber
+
+  expect(a.value).toBe(1)
+  expect(operator.value).toBe("<=")
+  expect(b.value).toBe(2)
+})
+
+test("can compare not equal", () => {
+  const ast = parse('=1 != 2') as ParsedFormula
+
+  const comparison = ast.value as ParsedComparison
+  const a = comparison.value.a as ParsedNumber
+  const operator = comparison.value.operator as ParsedComparator
+  const b = comparison.value.b as ParsedNumber
+
+  expect(a.value).toBe(1)
+  expect(operator.value).toBe("!=")
   expect(b.value).toBe(2)
 })
 
@@ -433,9 +504,11 @@ test("can make a comparison in a function parameter", () => {
   const func = ast.value as ParsedFunction
   const comparison = func.value.params?.[0] as ParsedComparison
   const a = comparison.value.a as ParsedNumber
+  const operator = comparison.value.operator as ParsedComparator
   const b = comparison.value.b as ParsedNumber
 
   expect(a.value).toBe(1)
+  expect(operator.value).toBe("==")
   expect(b.value).toBe(2)
 })
 

@@ -1,2 +1,2 @@
 export { stringResolver } from './stringResolver';
-export { createResultResolver, ArithmeticError, FunctionError } from './resultResolver';
+export { createResultResolver, ArithmeticError, FunctionError, ComparisonError } from './resultResolver';

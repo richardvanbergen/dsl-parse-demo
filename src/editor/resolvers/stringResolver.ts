@@ -7,10 +7,16 @@ export const stringResolver = createResolver<string>({
   arithmetic: (left, operator, right) => {
     return `(${left} ${operator} ${right})`
   },
-  primitive: (value) => `"${value}"`,
+  primitive: (value) => {
+    if (typeof value === 'string') {
+      return `"${value}"`
+    }
+
+    return value
+  },
   boolean: (value) => value ? 'true' : 'false',
-  comparison: (a, b) => {
-    return `${a} == ${b}`
+  comparison: (a, operator, b) => {
+    return `${a} ${operator.value} ${b}`
   },
   reference: (identifier, subPaths) => {
     let combine: string[] = [identifier]

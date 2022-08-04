@@ -37,6 +37,12 @@ export class ArithmeticError extends Error {
   }
 }
 
+export class ComparisonError extends Error {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
 export class FunctionError extends Error {
   constructor(message: string) {
     super(message)
@@ -69,7 +75,44 @@ export const createResultResolver = (inputValues: Record<string, unknown>) => {
         return operationFn(left, right)
       }
     },
-    comparison: (a, b) =>  a === b,
+    comparison: (a, operator, b) => {
+      if (operator.type === 'equals') {
+        return a === b
+      }
+
+      if (operator.type === 'not_equals') {
+        return a !== b
+      }
+
+      const numberA = a as number
+      const numberB = b as number
+
+      if (isNaN(numberA)) {
+        throw new ComparisonError(`Invalid comparison operation. Left side of operation is not a number.`)
+      }
+
+      if (isNaN(numberB)) {
+        throw new ComparisonError(`Invalid comparison operation. Right side of operation is not a number.`)
+      }
+
+      if (operator.type === 'lt') {
+        return numberA < numberB
+      }
+
+      if (operator.type === 'lte') {
+        return numberA <= numberB
+      }
+
+      if (operator.type === 'gt') {
+        return numberA > numberB
+      }
+
+      if (operator.type === 'gte') {
+        return numberA >= numberB
+      }
+
+      throw new ComparisonError(`Invalid comparison operation.`)
+    },
     boolean: (value) => value,
     primitive: (value) => value,
     reference: (identifier, subPaths) => {
