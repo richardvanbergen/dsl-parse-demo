@@ -5,6 +5,7 @@ import { ParsedFormula } from "../editor/grammarTypes"
 import { useFieldStore } from "../stores/useFieldStore"
 import {storeToRefs} from "pinia";
 import Button from "./Button.vue";
+import Card from "./Card.vue";
 
 const fieldStore = useFieldStore()
 const { fields } = storeToRefs(fieldStore)
@@ -67,11 +68,19 @@ document.addEventListener("click", (e) => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
-    <Field v-for="fieldName of Object.keys(Object.fromEntries(fields))" :name="fieldName" :has-focus="hasFocus(fieldName)" @change="handleChange" @focus-change="updateFocus">
-      {{ fieldName }}
-    </Field>
+  <Card>
+    <template #title>
+      Fields
+    </template>
 
-    <Button @click="createEmptyField">Create Field</Button>
-  </div>
+    <template #content>
+      <div class="flex flex-col gap-4">
+        <Field v-for="fieldName of Object.keys(Object.fromEntries(fields))" :name="fieldName" :has-focus="hasFocus(fieldName)" @change="handleChange" @focus-change="updateFocus">
+          {{ fieldName }}
+        </Field>
+
+        <Button @click="createEmptyField">Create Field</Button>
+      </div>
+    </template>
+  </Card>
 </template>

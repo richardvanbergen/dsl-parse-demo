@@ -90,6 +90,17 @@ registeredFunctions.set('IF', {
   detail: 'Returns `trueValue` if the condition is true, otherwise `falseValue`.',
 })
 
+registeredFunctions.set('EQUALS', {
+  fn: (parsedGrammar) => {
+    const a = parsedGrammar[0]
+    const b = parsedGrammar[1]
+
+    return a === b
+  },
+  info: "EQUALS(a: any, b: any)",
+  detail: 'Returns true if `a` and `b` are equal, otherwise false.',
+})
+
 export function toResolvers(functions: typeof registeredFunctions) {
   const resolvers = new Map<string, (value: unknown[]) => unknown>()
 
