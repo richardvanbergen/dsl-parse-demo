@@ -13,6 +13,17 @@ function arithmeticPost(data: any) {
     }
 }
 
+function comparisonPost(data: any) {
+    return {
+        ...data[0],
+        type: 'comparison',
+        value: {
+            a: data[0],
+            b: data[4],
+        }
+    }
+}
+
 function numberPost(data: any) {
     const parsed = data[0]
     if (parsed) {
@@ -76,6 +87,7 @@ value -> formula
 
 formula -> formula_identifier boolean {% data => ({ ...data[0], value: data[1] }) %}
          | formula_identifier arithmetic {% data => ({ ...data[0], value: data[1] }) %}
+         | formula_identifier comparison {% data => ({ ...data[0], value: data[1] }) %}
 
 formula_identifier -> %formula {% id %}
 
@@ -112,8 +124,11 @@ parameter_list
      | function_param
 
 function_param -> arithmetic {% id %}
-                | boolean  {% id %}
+                | boolean {% id %}
+                | comparison {% id %}
                 | string {% id %}
+
+comparison -> number %ws:* %comparison %ws:* number {% comparisonPost %}
 
 reference -> %reference {% referencePost %}
 identifier -> %identifier {% id %}

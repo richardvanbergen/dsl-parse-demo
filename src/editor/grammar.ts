@@ -11,6 +11,7 @@ declare var times: any;
 declare var divide: any;
 declare var exponent: any;
 declare var number: any;
+declare var comparison: any;
 declare var reference: any;
 declare var identifier: any;
 declare var string: any;
@@ -26,6 +27,17 @@ function arithmeticPost(data: any) {
             left: data[0],
             operator: data[2],
             right: data[4],
+        }
+    }
+}
+
+function comparisonPost(data: any) {
+    return {
+        ...data[0],
+        type: 'comparison',
+        value: {
+            a: data[0],
+            b: data[4],
         }
     }
 }
@@ -122,6 +134,7 @@ const grammar: Grammar = {
     {"name": "value", "symbols": ["formula"]},
     {"name": "formula", "symbols": ["formula_identifier", "boolean"], "postprocess": data => ({ ...data[0], value: data[1] })},
     {"name": "formula", "symbols": ["formula_identifier", "arithmetic"], "postprocess": data => ({ ...data[0], value: data[1] })},
+    {"name": "formula", "symbols": ["formula_identifier", "comparison"], "postprocess": data => ({ ...data[0], value: data[1] })},
     {"name": "formula_identifier", "symbols": [(lexer.has("formula") ? {type: "formula"} : formula)], "postprocess": id},
     {"name": "arithmetic", "symbols": ["addition_subtraction"], "postprocess": data => { return data[0] }},
     {"name": "addition_subtraction$ebnf$1", "symbols": []},
@@ -183,7 +196,13 @@ const grammar: Grammar = {
     {"name": "parameter_list", "symbols": ["function_param"]},
     {"name": "function_param", "symbols": ["arithmetic"], "postprocess": id},
     {"name": "function_param", "symbols": ["boolean"], "postprocess": id},
+    {"name": "function_param", "symbols": ["comparison"], "postprocess": id},
     {"name": "function_param", "symbols": ["string"], "postprocess": id},
+    {"name": "comparison$ebnf$1", "symbols": []},
+    {"name": "comparison$ebnf$1", "symbols": ["comparison$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "comparison$ebnf$2", "symbols": []},
+    {"name": "comparison$ebnf$2", "symbols": ["comparison$ebnf$2", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "comparison", "symbols": ["number", "comparison$ebnf$1", (lexer.has("comparison") ? {type: "comparison"} : comparison), "comparison$ebnf$2", "number"], "postprocess": comparisonPost},
     {"name": "reference", "symbols": [(lexer.has("reference") ? {type: "reference"} : reference)], "postprocess": referencePost},
     {"name": "identifier", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": id},
     {"name": "string", "symbols": [(lexer.has("string") ? {type: "string"} : string)], "postprocess": id},

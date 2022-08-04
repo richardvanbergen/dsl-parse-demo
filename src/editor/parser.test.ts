@@ -8,7 +8,7 @@ import {
 
 import {
   ParsedArithmetic,
-  ParsedBoolean,
+  ParsedBoolean, ParsedComparison,
   ParsedFormula,
   ParsedFunction,
   ParsedNumber,
@@ -392,6 +392,29 @@ test("throw errors with invalid names", () => {
   expect(() => parse(`=$s.2test`)).toThrow()
   expect(() => parse(`=$_.te%t`)).toThrow()
   expect(() => parse(`=$s.test.8`)).toThrow()
+})
+
+test("can make a comparison", () => {
+  const ast = parse('=1 == 2') as ParsedFormula
+
+  const comparison = ast.value as ParsedComparison
+  const a = comparison.value.a as ParsedNumber
+  const b = comparison.value.b as ParsedArithmetic
+
+  expect(a.value).toBe(1)
+  expect(b.value).toBe(2)
+})
+
+test("can make a comparison in a function parameter", () => {
+  const ast = parse('=TEST(1 == 2)') as ParsedFormula
+
+  const func = ast.value as ParsedFunction
+  const comparison = func.value.params?.[0] as ParsedComparison
+  const a = comparison.value.a as ParsedNumber
+  const b = comparison.value.b as ParsedNumber
+
+  expect(a.value).toBe(1)
+  expect(b.value).toBe(2)
 })
 
 test("can flatten ast", () => {
