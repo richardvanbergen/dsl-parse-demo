@@ -35,7 +35,7 @@ export const useFieldStore = defineStore('fieldStore', {
     focusedField: "",
     circularReferenceDetected: false,
     referencedFunctions: new Set<string>(),
-    formValues: {} as Record<string, unknown>,
+    formValues: {} as Record<string, any>,
     dependantsGraph: new Map<string, Set<string>>(),
     definedFormInputs: new Map<string, FormInput>(),
 
@@ -65,7 +65,7 @@ export const useFieldStore = defineStore('fieldStore', {
         updatedBy: [...updatedBy].join(', ')
       }
     },
-    debugOutput: function(): { name: string, value: unknown, color: string, description: string }[] {
+    debugOutput: function(): { name: string, value: any, color: string, description: string }[] {
       const result = this.resolvedOutput
       const formula = this.compiledOutput
 

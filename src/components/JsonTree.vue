@@ -14,7 +14,7 @@ const {fieldAst} = storeToRefs(fieldStore)
       Parsed Tree
     </template>
     <template #content>
-      <VueJsonPretty v-if="fieldAst?.tree" :data="fieldAst.tree"/>
+      <VueJsonPretty v-if="fieldAst?.tree" :data="{ parsed: fieldAst.tree }"/>
       <span v-else class="text-gray-400 text-lg">No Input!</span>
     </template>
   </Card>

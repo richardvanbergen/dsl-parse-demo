@@ -80,3 +80,8 @@ test("can match identifier", () => {
   expect(result?.type).toBe('identifier')
 })
 
+test("can match comparison", () => {
+  const result = lexer.reset(`==`).next()
+  expect(result?.type).toBe('comparison')
+})
+

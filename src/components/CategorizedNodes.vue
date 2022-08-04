@@ -16,7 +16,7 @@ function isParsedReference(node: ParsedGrammar): node is ParsedReference {
   return isGrammarType<ParsedReference>(node, 'reference')
 }
 
-const colorMap = {
+const colorMap: Record<string, string> = {
   'formula': 'bg-blue-500',
   'arithmetic': 'bg-green-500',
   'primitive': 'bg-yellow-500',
@@ -40,7 +40,7 @@ const colorMap = {
       <ul role="list" class="grid grid-cols-1 gap-5 sm:gap-4 sm:grid-cols-2">
         <li v-for="(nodes, type) of Object.fromEntries(categorizedNodes)" :key="type" class="col-span-1 flex shadow-sm rounded-md">
           <div :class="[colorMap[type] ?? 'bg-gray-500', 'flex-shrink-0 flex items-center justify-center w-16 text-white text-sm font-medium rounded-l-md']">
-            {{ type.at(0).toLocaleUpperCase() }}
+            {{ String(type).at(0)?.toLocaleUpperCase() }}
           </div>
 
           <div class="flex-1 flex items-center justify-between border-t border-r border-b border-gray-200 bg-white rounded-r-md truncate">
