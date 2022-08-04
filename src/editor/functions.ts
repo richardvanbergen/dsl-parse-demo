@@ -1,14 +1,17 @@
 import { max, min, round } from "mathjs";
 
+export type FormInput = {
+  name: string,
+  label: string,
+  uiType: string,
+  description?: string,
+  resolveType: 'string' | 'number' | 'boolean',
+}
+
 export const registeredFunctions = new Map<string, {
   info?: string,
   detail?: string,
-  inputs?: {
-    name: string,
-    label: string,
-    uiType: string,
-    resolveType: 'string' | 'number' | 'boolean',
-  }[],
+  inputs?: FormInput[],
   fn: (value: unknown[]) => unknown
 }>()
 

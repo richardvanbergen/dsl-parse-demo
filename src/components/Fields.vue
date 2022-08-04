@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import Field from "./editor/Field.vue"
 import {onMounted, ref} from "vue"
-import { ParsedFormula } from "../editor/parser"
+import { ParsedFormula } from "../editor/grammarTypes"
 import { useFieldStore } from "../stores/useFieldStore"
 import {storeToRefs} from "pinia";
 import Button from "./Button.vue";
@@ -34,7 +34,27 @@ function createEmptyField() {
 }
 
 onMounted(() => {
-  fieldStore.updateInput('age', 234)
+  fieldStore.addInputField({
+    name: "age",
+    label: "Age",
+    uiType: "text",
+    resolveType: "number",
+  })
+
+  fieldStore.addInputField({
+    name: "name",
+    label: "Name",
+    uiType: "text",
+    resolveType: "string",
+  })
+
+  fieldStore.addInputField({
+    name: "receiveMarketing",
+    label: "Would you like to receive marketing emails?",
+    description: "We'll send you occasional emails about new products and events.",
+    uiType: "checkbox",
+    resolveType: "boolean",
+  })
 })
 
 document.addEventListener("click", (e) => {

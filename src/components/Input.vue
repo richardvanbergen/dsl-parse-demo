@@ -2,24 +2,10 @@
 import {storeToRefs} from "pinia";
 import {useFieldStore} from "../stores/useFieldStore";
 import Card from "./Card.vue";
-import {computed, reactive} from "vue";
-import {registeredFunctions} from "../editor/functions";
+import {reactive} from "vue";
 
 const fieldStore = useFieldStore()
-const {referencedFunctions} = storeToRefs(fieldStore)
-
-const inputs = computed(() => {
-  let inputs: Record<string, unknown>[] = [];
-
-  [...referencedFunctions.value].forEach(refFn => {
-    const refInputs = registeredFunctions.get(refFn)?.inputs
-    if (refInputs) {
-      inputs = [...inputs, ...refInputs]
-    }
-  })
-
-  return inputs
-})
+const {formInputs} = storeToRefs(fieldStore)
 
 const formState = reactive<Record<string, string>>({})
 
@@ -34,17 +20,29 @@ function handleChange(e: Event) {
     <template #title>
       Data Model
     </template>
-    <template #content v-if="inputs?.length">
-      <div v-for="input of inputs">
-        <label :for="input.name" class="block text-sm font-medium text-gray-700">{{ input.label }}</label>
-        <div class="mt-1">
-          <input
-            v-model="formState[input.name]"
-            :type="input.uiType"
-            :name="input.name"
-            :id="input.name"
-            @input="handleChange"
-            class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"/>
+    <template #content v-if="formInputs?.size">
+      <div class="flex flex-col gap-4">
+        <div v-for="[name, input] of formInputs">
+          <div v-if="['text', 'email', 'password'].includes(input.uiType)">
+            <label :for="name" class="block text-sm font-medium text-gray-700 block mb-1">{{ input.label }}</label>
+            <input
+              v-model="formState[name]"
+              :type="input.uiType"
+              :name="name"
+              :id="name"
+              @input="handleChange"
+              class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md" />
+          </div>
+
+          <div class="relative flex items-start" v-if="input.uiType === 'checkbox'">
+            <div class="flex items-center h-5">
+              <input :id="name" :aria-describedby="`${name}-description`" :name="name" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
+            </div>
+            <div class="ml-3 text-sm">
+              <label :for="name" class="font-medium text-gray-700">{{ input.label }}</label>
+              <p :id="`${name}-description`" class="text-gray-500" v-if="input.description">{{ input.description }}</p>
+            </div>
+          </div>
         </div>
       </div>
     </template>

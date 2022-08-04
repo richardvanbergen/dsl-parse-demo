@@ -21,6 +21,7 @@ import {
 
 import { Inputs, ResolvedValue } from "../editor/resolve"
 import {isGrammarType} from "../editor/parser";
+import {FormInput, registeredFunctions} from "../editor/functions";
 
 type FieldInformation = {
   list: ParsedGrammar[] | undefined
@@ -35,6 +36,7 @@ export const useFieldStore = defineStore('fieldStore', {
     circularReferenceDetected: false,
     referencedFunctions: new Set<string>(),
     dependantsGraph: new Map<string, Set<string>>(),
+    definedFormInputs: new Map<string, FormInput>(),
 
     inputs: {
       input: new Map<string, ResolvedValue>(),
@@ -117,6 +119,24 @@ export const useFieldStore = defineStore('fieldStore', {
 
       return ""
     },
+    formInputs: function(): Map<string, FormInput> {
+      let dynamicInputs = new Map<string, FormInput>()
+
+      this.definedFormInputs.forEach(definedInput => {
+        dynamicInputs.set(definedInput.name, definedInput)
+      })
+
+      this.referencedFunctions.forEach(functionName => {
+        const functionInputs = registeredFunctions.get(functionName)?.inputs
+        if (functionInputs) {
+          functionInputs.forEach(input => {
+            dynamicInputs.set(input.name, input)
+          })
+        }
+      })
+
+      return dynamicInputs
+    },
     categorizedNodes: function(): Map<GrammarType, ParsedGrammar[]> {
       return this.nodeList.reduce((acc, node) => {
         const values = acc.get(node.type) ?? []
@@ -139,7 +159,28 @@ export const useFieldStore = defineStore('fieldStore', {
     setFocusedField(field: string) {
       this.focusedField = field
     },
+    addInputField(input: FormInput) {
+      this.definedFormInputs.set(input.name, input)
+      this.updateInput(input.name, '')
+    },
     updateInput(key: string, value: unknown) {
+      const inputs = this.formInputs.get(key)
+
+      if (inputs) {
+        const type = inputs.resolveType
+        switch (type) {
+          case "string":
+            value = String(value)
+            break
+          case "number":
+            value = Number(value)
+            break
+          case "boolean":
+            value = value === "true"
+            break
+        }
+      }
+
       this.inputs.input.set(key, { value })
       const dependents = this.dependantsGraph.get('input') ?? []
 
