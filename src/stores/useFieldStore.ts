@@ -240,7 +240,7 @@ export const useFieldStore = defineStore('fieldStore', {
         }
       })
 
-      const previousDependencies = this.fields.get(field)?.dependencies ?? new Set()
+      const previousDependencies = new Set(this.fields.get(field)?.dependencies)
       const currentDependencies = getFieldDependencies(flattened)
 
       this.dependantsGraph = updateDependantsGraph(field, previousDependencies, currentDependencies, this.dependantsGraph)

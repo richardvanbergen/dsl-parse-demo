@@ -66,8 +66,7 @@ export function updateDependantsGraph(fieldName: string, previousDependencies: S
   toRemove.forEach(ref => {
     const set = dependantsGraph.get(ref)
     if (set) {
-      set.delete(ref)
-
+      set.delete(fieldName)
       if (set.size === 0) {
         dependantsGraph.delete(ref)
       }
