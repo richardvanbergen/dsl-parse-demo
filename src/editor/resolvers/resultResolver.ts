@@ -69,6 +69,7 @@ export const createResultResolver = (inputValues: Record<string, unknown>) => {
         return operationFn(left, right)
       }
     },
+    boolean: (value) => value,
     primitive: (value) => value,
     reference: (identifier, subPaths) => {
       let combine = [identifier]

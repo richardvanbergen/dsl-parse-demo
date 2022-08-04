@@ -28,6 +28,7 @@ export type Inputs = {
 type Reducers = {
   function: (name: string, params: unknown[]) => unknown,
   primitive: (value: string | boolean | number) => unknown,
+  boolean: (value: string | boolean | number) => unknown,
   reference: (identifier: string, subPaths: string[]) => unknown,
   arithmetic: (left: number | undefined, operator: string, right: number | undefined) => unknown,
 }
@@ -35,14 +36,17 @@ type Reducers = {
 export function createResolver<T>(reducers: Reducers) {
   const resolvePrimitive = (value: ParsedPrimitive) => {
     const isString = isGrammarType<ParsedString>(value, 'string')
-    const isBoolean = isGrammarType<ParsedBoolean>(value, 'boolean')
     const isNumber = isGrammarType<ParsedNumber>(value, 'number')
 
-    if (isString || isBoolean || isNumber) {
+    if (isString || isNumber) {
       return reducers.primitive(value.value)
     }
 
     return null
+  }
+
+  const resolveBoolean = (value: ParsedBoolean): T | undefined => {
+    return reducers.boolean(value.value) as T
   }
 
   const resolveFunction = (parsedFunction: ParsedFunction): T | undefined => {
@@ -76,6 +80,10 @@ export function createResolver<T>(reducers: Reducers) {
 
     if (isGrammarType<ParsedReference>(branch, 'reference')) {
       return resolveReference(branch)
+    }
+
+    if (isGrammarType<ParsedBoolean>(branch, 'boolean')) {
+      return resolveBoolean(branch)
     }
 
     if (isPrimitive(branch)) {

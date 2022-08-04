@@ -74,6 +74,22 @@ registeredFunctions.set('JSON', {
   ]
 })
 
+registeredFunctions.set('IF', {
+  fn: (parsedGrammar) => {
+    const condition = parsedGrammar[0]
+    const trueValue = parsedGrammar[1]
+    const falseValue = parsedGrammar[2]
+
+    if (condition) {
+      return trueValue
+    } else {
+      return falseValue
+    }
+  },
+  info: "IF(condition: boolean, trueValue: any, falseValue: any)",
+  detail: 'Returns `trueValue` if the condition is true, otherwise `falseValue`.',
+})
+
 export function toResolvers(functions: typeof registeredFunctions) {
   const resolvers = new Map<string, (value: unknown[]) => unknown>()
 
