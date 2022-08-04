@@ -35,6 +35,7 @@ export const useFieldStore = defineStore('fieldStore', {
     focusedField: "",
     circularReferenceDetected: false,
     referencedFunctions: new Set<string>(),
+    formValues: {} as Record<string, unknown>,
     dependantsGraph: new Map<string, Set<string>>(),
     definedFormInputs: new Map<string, FormInput>(),
 
@@ -126,15 +127,6 @@ export const useFieldStore = defineStore('fieldStore', {
         dynamicInputs.set(definedInput.name, definedInput)
       })
 
-      this.referencedFunctions.forEach(functionName => {
-        const functionInputs = registeredFunctions.get(functionName)?.inputs
-        if (functionInputs) {
-          functionInputs.forEach(input => {
-            dynamicInputs.set(input.name, input)
-          })
-        }
-      })
-
       return dynamicInputs
     },
     categorizedNodes: function(): Map<GrammarType, ParsedGrammar[]> {
@@ -161,7 +153,7 @@ export const useFieldStore = defineStore('fieldStore', {
     },
     addInputField(input: FormInput) {
       this.definedFormInputs.set(input.name, input)
-      this.updateInput(input.name, '')
+      this.updateInput(input.name, input.defaultValue ?? '')
     },
     updateInput(key: string, value: unknown) {
       const inputs = this.formInputs.get(key)
@@ -176,11 +168,12 @@ export const useFieldStore = defineStore('fieldStore', {
             value = Number(value)
             break
           case "boolean":
-            value = value === "true"
+            value = Boolean(value)
             break
         }
       }
 
+      this.formValues[key] = value
       this.inputs.input.set(key, { value })
       const dependents = this.dependantsGraph.get('input') ?? []
 
@@ -233,6 +226,17 @@ export const useFieldStore = defineStore('fieldStore', {
       flattened.forEach(node => {
         if (isGrammarType<ParsedFunction>(node, 'function')) {
           this.referencedFunctions.add(node.value.name)
+          this.referencedFunctions.forEach(functionName => {
+            const functionInputs = registeredFunctions.get(functionName)?.inputs
+            if (functionInputs) {
+              functionInputs.forEach(input => {
+                const value = this.inputs.input.get(input.name)
+                if (!value) {
+                  this.addInputField(input)
+                }
+              })
+            }
+          })
         }
       })
 

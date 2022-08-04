@@ -38,6 +38,7 @@ onMounted(() => {
     name: "age",
     label: "Age",
     uiType: "text",
+    defaultValue: 20,
     resolveType: "number",
   })
 

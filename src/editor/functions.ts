@@ -5,12 +5,14 @@ export type FormInput = {
   label: string,
   uiType: string,
   description?: string,
+  defaultValue?: unknown,
   resolveType: 'string' | 'number' | 'boolean',
 }
 
 export const registeredFunctions = new Map<string, {
   info?: string,
   detail?: string,
+  params?: string[],
   inputs?: FormInput[],
   fn: (value: unknown[]) => unknown
 }>()
@@ -41,22 +43,6 @@ registeredFunctions.set('ROUND', {
   detail: 'Rounds a value to a given precision',
 })
 
-registeredFunctions.set('TEST_INPUTS', {
-  fn: () => {
-    return 0
-  },
-  info: "TEST_INPUTS()",
-  detail: 'Test adding inputs dynamically to data model',
-  inputs: [
-    {
-      name: 'input1',
-      label: 'Input 1',
-      uiType: 'text',
-      resolveType: 'string'
-    },
-  ]
-})
-
 registeredFunctions.set('STRING_REPLACE', {
   fn: (parsedGrammar) => {
     const template = String(parsedGrammar[0])
@@ -75,7 +61,17 @@ registeredFunctions.set('JSON', {
     }
   },
   info: "JSON(json_stringified: string)",
+  params: ['$input.jsonInput'],
   detail: 'Get the value of a JSON string',
+  inputs: [
+    {
+      name: 'jsonInput',
+      label: 'JSON Input',
+      uiType: 'text',
+      defaultValue: '{}',
+      resolveType: 'string'
+    },
+  ]
 })
 
 export function toResolvers(functions: typeof registeredFunctions) {
@@ -92,8 +88,9 @@ export function toCompletions(functions: typeof registeredFunctions) {
   const completions: {label: string, type: string, detail?: string, info?: string}[] = []
 
   for (let [key, value] of functions) {
+    const params = value.params ? value.params.join(', ') : ''
     completions.push({
-      label: `${key}()`,
+      label: `${key}(${params})`,
       type: 'keyword',
       info: value.info,
       detail: value.detail,
