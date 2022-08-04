@@ -149,7 +149,6 @@ export const useFieldStore = defineStore('fieldStore', {
     },
     resolveField(field: string) {
       const target = this.fields.get(field)
-      console.log(field)
       if (target?.tree) {
         try {
           validateDependantsGraph(field, this.dependantsGraph)
@@ -172,7 +171,6 @@ export const useFieldStore = defineStore('fieldStore', {
 
         try {
           const value = resolver(target.tree)
-          console.log({ value, tree: target.tree, input: this.formulaInput })
           this.inputs.values.set(field, {
             value
           })

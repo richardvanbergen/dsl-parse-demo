@@ -57,19 +57,15 @@ export const createResultResolver = (inputValues: Record<string, unknown>) => {
     arithmetic: (left, operator, right) => {
       const operationFn = getOperationFunction(operator)
 
-      if (!left) {
-        throw new ArithmeticError(`Invalid arithmetic operation. Left side of operation is undefined.`)
+      if (typeof left !== 'undefined' && isNaN(left)) {
+        throw new ArithmeticError(`Invalid arithmetic operation. Left side of operation is not a number.`)
       }
 
-      if (!right) {
-        throw new ArithmeticError(`Invalid arithmetic operation. Right side of operation is undefined.`)
+      if (typeof right !== 'undefined' && isNaN(right)) {
+        throw new ArithmeticError(`Invalid arithmetic operation. Right side of operation is not a number.`)
       }
 
-      if (isNaN(left) || isNaN(right)) {
-        throw new ArithmeticError(`Invalid arithmetic operation: ${left} ${operator} ${right}`)
-      }
-
-      if (operationFn && left && right) {
+      if (operationFn) {
         return operationFn(left, right)
       }
     },

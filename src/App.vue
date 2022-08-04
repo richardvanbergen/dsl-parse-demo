@@ -42,7 +42,7 @@ function toggleJsonView() {
 
     <template #right>
       <CategorizedNodes />
-<!--      <Input />-->
+      <Input />
       <Dependants />
       <ResolveOutput />
     </template>
