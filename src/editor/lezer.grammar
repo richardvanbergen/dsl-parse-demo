@@ -43,7 +43,7 @@ commaSep<content> { "" | content ("," content)* }
     Identifier { @asciiLetter ( @asciiLetter | @digit | "_" )* }
     space { @whitespace+ }
     Number { "-"* @digit+ "."? @digit* }
-    Operator { "+" | "-" | "*" | "/" | "^" }
+    Operator { "+" | "-" | "*" | "/" | "^" | "==" }
     String {
         '"' (![\\\n"] | "\\" _)* '"'? |
         "'" (![\\\n'] | "\\" _)* "'"?

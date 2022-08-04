@@ -128,7 +128,8 @@ function_param -> arithmetic {% id %}
                 | comparison {% id %}
                 | string {% id %}
 
-comparison -> number %ws:* %comparison %ws:* number {% comparisonPost %}
+comparison -> comparable %ws:* %comparison %ws:* comparable {% comparisonPost %}
+comparable -> number {% id %} | boolean {% id %} | string {% id %}
 
 reference -> %reference {% referencePost %}
 identifier -> %identifier {% id %}

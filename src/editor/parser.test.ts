@@ -405,6 +405,28 @@ test("can make a comparison", () => {
   expect(b.value).toBe(2)
 })
 
+test("can compare booleans", () => {
+  const ast = parse('=true == 2') as ParsedFormula
+
+  const comparison = ast.value as ParsedComparison
+  const a = comparison.value.a as ParsedNumber
+  const b = comparison.value.b as ParsedArithmetic
+
+  expect(a.value).toBe(true)
+  expect(b.value).toBe(2)
+})
+
+test("can compare strings", () => {
+  const ast = parse('="true" == 2') as ParsedFormula
+
+  const comparison = ast.value as ParsedComparison
+  const a = comparison.value.a as ParsedNumber
+  const b = comparison.value.b as ParsedArithmetic
+
+  expect(a.value).toBe("true")
+  expect(b.value).toBe(2)
+})
+
 test("can make a comparison in a function parameter", () => {
   const ast = parse('=TEST(1 == 2)') as ParsedFormula
 

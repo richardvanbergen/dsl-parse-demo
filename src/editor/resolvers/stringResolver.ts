@@ -9,6 +9,9 @@ export const stringResolver = createResolver<string>({
   },
   primitive: (value) => `"${value}"`,
   boolean: (value) => value ? 'true' : 'false',
+  comparison: (a, b) => {
+    return `${a} == ${b}`
+  },
   reference: (identifier, subPaths) => {
     let combine: string[] = [identifier]
     if (subPaths && subPaths.length > 0) {
