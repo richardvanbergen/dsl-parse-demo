@@ -94,6 +94,13 @@ export interface ParsedReference extends ParsedGrammar {
   }
 }
 
+export interface ParsedScopedReference extends ParsedGrammar {
+  type: 'scoped_reference'
+  value: {
+    subpath: string[]
+  }
+}
+
 export interface ParsedEach extends ParsedGrammar {
   type: 'each'
   value: {
@@ -106,7 +113,7 @@ export interface ParsedFunction extends ParsedGrammar {
   type: 'function'
   value: {
     name: string
-    params: ParsedFormulaValue[]
+    params: ParsedScopedFormulaValue[]
   }
 }
 
@@ -117,11 +124,13 @@ export type ParsedComparator = ParsedEquals | ParsedNotEquals | ParsedLessThan |
 export interface ParsedComparison extends ParsedGrammar {
   type: 'comparison'
   value: {
-    a: ParsedArithmetic | ParsedNumber | ParsedReference
+    a: ParsedArithmetic | ParsedNumber | ParsedReference | ParsedScopedReference
     operator: ParsedComparator
-    b: ParsedArithmetic | ParsedNumber | ParsedReference
+    b: ParsedArithmetic | ParsedNumber | ParsedReference | ParsedScopedReference
   }
 }
+
+export type ParsedScopedFormulaValue = ParsedFormulaValue | ParsedScopedReference
 
 export type ParsedFormulaValue =
   ParsedArithmetic |
@@ -136,9 +145,9 @@ export type ParsedFormulaValue =
 export interface ParsedArithmetic extends ParsedGrammar {
   type: 'arithmetic'
   value: {
-    left: ParsedArithmetic | ParsedNumber | ParsedReference
+    left: ParsedArithmetic | ParsedNumber | ParsedReference | ParsedScopedReference
     operator: ParsedOperator
-    right: ParsedArithmetic | ParsedNumber | ParsedReference
+    right: ParsedArithmetic | ParsedNumber | ParsedReference | ParsedScopedReference
   }
 }
 

@@ -14,6 +14,7 @@ import {
   ParsedNumber,
   ParsedOperator,
   ParsedReference,
+  ParsedScopedReference,
   ParsedString
 } from "./grammarTypes"
 
@@ -530,8 +531,6 @@ test("can flatten ast", () => {
   expect((flat[4] as ParsedNumber).value).toBe(2)
 })
 
-import util from 'util'
-
 test("can process each", () => {
   const ast = parse('=$test each 1') as ParsedFormula
   const each = ast.value as ParsedEach
@@ -545,9 +544,19 @@ test("can process each", () => {
 })
 
 test("can use row variables", () => {
-  const ast = parse('=$test each MAX("hello") + row.test * $whatever') as ParsedFormula
-  console.log(util.inspect(ast, {showHidden: false, depth: null, colors: true}))
-  expect(true).toBe(true)
+  const ast = parse('=$test each row.test * $whatever') as ParsedFormula
+
+  const each = ast.value as ParsedEach
+  const context = each.value.context as ParsedReference
+  const body = each.value.body as ParsedArithmetic
+  const left = body.value.left as ParsedScopedReference
+  const right = body.value.right as ParsedReference
+
+  expect(context.type).toBe('reference')
+  expect(context.value.identifier).toBe('test')
+  expect(left.type).toBe('scoped_reference')
+  expect(left.value.subpath).toStrictEqual(['test'])
+  expect(right.value.identifier).toBe('whatever')
 })
 
 test("can flatten more complex ast", () => {

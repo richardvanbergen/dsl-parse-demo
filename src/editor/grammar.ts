@@ -80,6 +80,7 @@ function booleanPost(data: any) {
 function eachPost(data: any) {
     const parsed = {...data[0]}
     parsed.type = 'each'
+    parsed.text = 'each'
     parsed.value = {
         context: data[0],
         body: data[4]
@@ -231,11 +232,6 @@ const grammar: Grammar = {
     {"name": "each$ebnf$4", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
     {"name": "each$ebnf$4", "symbols": ["each$ebnf$4", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "each", "symbols": ["function", "each$ebnf$3", (lexer.has("each") ? {type: "each"} : each), "each$ebnf$4", "operation"], "postprocess": eachPost},
-    {"name": "each$ebnf$5", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
-    {"name": "each$ebnf$5", "symbols": ["each$ebnf$5", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "each$ebnf$6", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
-    {"name": "each$ebnf$6", "symbols": ["each$ebnf$6", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "each", "symbols": ["scoped_reference", "each$ebnf$5", (lexer.has("each") ? {type: "each"} : each), "each$ebnf$6", "operation"], "postprocess": eachPost},
     {"name": "function$ebnf$1", "symbols": []},
     {"name": "function$ebnf$1", "symbols": ["function$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "function$ebnf$2", "symbols": []},
