@@ -75,6 +75,13 @@ export const createResultResolver = (inputValues: Record<string, unknown>) => {
         return operationFn(left, right)
       }
     },
+    scopedReference: (path: string[], context?: unknown) => {
+      if (path.length === 0) {
+        return context
+      }
+
+      return get(context, path)
+    },
     comparison: (a, operator, b) => {
       if (operator.type === 'equals') {
         return a === b

@@ -14,7 +14,7 @@ import type {
   ParsedBoolean,
   ParsedNumber,
   ParsedComparison,
-  ParsedComparator
+  ParsedComparator, ParsedScopedReference
 } from './grammarTypes'
 
 export type ResolvedValue = {
@@ -32,9 +32,18 @@ type Reducers = {
   primitive: (value: string | boolean | number) => unknown,
   boolean: (value: string | boolean | number) => unknown,
   reference: (identifier: string, subPaths: string[]) => unknown,
+  scopedReference: (path: string[], context?: unknown) => unknown,
   comparison: (a: unknown, operator: ParsedComparator, b: unknown) => unknown,
   arithmetic: (left: number | undefined, operator: string, right: number | undefined) => unknown,
 }
+
+export class EachError extends Error {
+  constructor(message: string) {
+    super(message)
+  }
+}
+
+type FormulaContext = { row: unknown }
 
 export function createResolver<T>(reducers: Reducers) {
   const resolvePrimitive = (value: ParsedPrimitive) => {
@@ -62,15 +71,15 @@ export function createResolver<T>(reducers: Reducers) {
     return reducers.function(name, resolvedParams) as T
   }
 
-  const resolveArithmetic = (arithmetic: ParsedArithmetic): T | undefined => {
-    const left = resolveBranch(arithmetic.value.left)
-    const right = resolveBranch(arithmetic.value.right)
+  const resolveArithmetic = (arithmetic: ParsedArithmetic, context?: FormulaContext): T | undefined => {
+    const left = resolveBranch(arithmetic.value.left, context)
+    const right = resolveBranch(arithmetic.value.right, context)
     return reducers.arithmetic(left as any, arithmetic.value.operator.value, right as any) as T
   }
 
-  const resolveComparison = (comparison: ParsedComparison): T | undefined => {
-    const a = resolveBranch(comparison.value.a)
-    const b = resolveBranch(comparison.value.b)
+  const resolveComparison = (comparison: ParsedComparison, context?: FormulaContext): T | undefined => {
+    const a = resolveBranch(comparison.value.a, context)
+    const b = resolveBranch(comparison.value.b, context)
     return reducers.comparison(a as any, comparison.value.operator, b as any) as T
   }
 
@@ -78,9 +87,17 @@ export function createResolver<T>(reducers: Reducers) {
     return reducers.reference(reference.value.identifier, reference.value.subpath) as T
   }
 
-  const resolveBranch = (branch: ParsedGrammar): T | undefined => {
+  const resolveScopedReference = (path: ParsedScopedReference, context?: FormulaContext): T | undefined => {
+    return reducers.scopedReference(path.value.subpath ?? [], context?.row) as T
+  }
+
+  function resolveBranch (branch: ParsedGrammar, context?: FormulaContext): T | undefined {
+    if (isGrammarType<ParsedFormula>(branch, 'formula')) {
+      return resolveBranch(branch.value, context)
+    }
+
     if (isGrammarType<ParsedArithmetic>(branch, 'arithmetic')) {
-      return resolveArithmetic(branch)
+      return resolveArithmetic(branch, context)
     }
 
     if (isGrammarType<ParsedFunction>(branch, 'function')) {
@@ -91,12 +108,16 @@ export function createResolver<T>(reducers: Reducers) {
       return resolveReference(branch)
     }
 
-    if (isGrammarType<ParsedBoolean>(branch, 'boolean')) {
-      return resolveBoolean(branch)
+    if (isGrammarType<ParsedComparison>(branch, 'comparison')) {
+      return resolveComparison(branch, context)
     }
 
-    if (isGrammarType<ParsedComparison>(branch, 'comparison')) {
-      return resolveComparison(branch)
+    if (isGrammarType<ParsedScopedReference>(branch, 'scoped_reference')) {
+      return resolveScopedReference(branch, context)
+    }
+
+    if (isGrammarType<ParsedBoolean>(branch, 'boolean')) {
+      return resolveBoolean(branch)
     }
 
     if (isPrimitive(branch)) {
@@ -104,7 +125,18 @@ export function createResolver<T>(reducers: Reducers) {
     }
   }
 
-  return (formula: ParsedFormula) => {
-    return resolveBranch(formula.value)
+  return resolveBranch
+}
+
+export function resolveEach(context: ParsedFunction | ParsedReference, body: ParsedGrammar, resolver: (formula: ParsedGrammar, context?: FormulaContext) => unknown) {
+  const resolvedContext = resolver(context) as unknown[]
+
+  if (Symbol.iterator in Object(resolvedContext)) {
+    const rows = [...resolvedContext]
+    return rows.map(context => {
+      return resolver(body, { row: context })
+    })
   }
+
+  throw new EachError('Each formula must be iterable.')
 }

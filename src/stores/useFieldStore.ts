@@ -1,7 +1,7 @@
 import { acceptHMRUpdate, defineStore } from 'pinia'
 
 import type {
-  GrammarType,
+  GrammarType, ParsedEach,
   ParsedFormula, ParsedFunction,
   ParsedGrammar
 } from '../editor/grammarTypes'
@@ -19,7 +19,7 @@ import {
   createResultResolver
 } from '../editor/resolvers'
 
-import { Inputs, ResolvedValue } from "../editor/resolve"
+import {Inputs, ResolvedValue, resolveEach} from "../editor/resolve"
 import {isGrammarType} from "../editor/parser";
 import {FormInput, registeredFunctions} from "../editor/functions";
 
@@ -204,7 +204,14 @@ export const useFieldStore = defineStore('fieldStore', {
         const resolver = createResultResolver(this.formulaInput)
 
         try {
-          const value = resolver(target.tree)
+          let value: unknown
+          if (isGrammarType<ParsedEach>(target.tree.value, 'each')) {
+            const each = target.tree.value
+            value = resolveEach(each.value.context, each.value.body, resolver)
+          } else {
+            value = resolver(target.tree)
+          }
+
           this.inputs.values.set(field, {
             value
           })

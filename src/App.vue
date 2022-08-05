@@ -52,11 +52,11 @@ function toggleOutput(value: boolean) {
     </template>
 
     <template #right>
-      <JsonTree v-if="viewJson" />
-      <CategorizedNodes v-if="viewCategories" />
       <Input v-if="viewInput" />
       <Dependants v-if="viewDependants" />
       <ResolveOutput v-if="viewOutput" />
+      <CategorizedNodes v-if="viewCategories" />
+      <JsonTree v-if="viewJson" />
     </template>
 
     <template #controls>

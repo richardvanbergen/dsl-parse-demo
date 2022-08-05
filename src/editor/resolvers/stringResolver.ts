@@ -1,4 +1,5 @@
 import {createResolver} from "../resolve";
+import get from "lodash/get";
 
 export const stringResolver = createResolver<string>({
   function: (name, params) => {
@@ -13,6 +14,13 @@ export const stringResolver = createResolver<string>({
     }
 
     return value
+  },
+  scopedReference(path, context) {
+    if (path.length === 0) {
+      return context
+    }
+
+    return get(context, path)
   },
   boolean: (value) => value ? 'true' : 'false',
   comparison: (a, operator, b) => {
