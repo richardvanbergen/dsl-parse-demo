@@ -12,7 +12,10 @@ const lexer = moo.compile({
     // @ts-expect-error no types
     { match: /'(?:\\['\\rn]|[^'\\])*?'/, lineBreaks: true, value: x => x.slice(1, -1) },
   ],
-  reference:  /\$[a-zA-Z_]{1}[a-zA-Z\d_]*(?:(?:\.[a-zA-Z_]{1}[a-zA-z\d_]*)|(?:\[\d+\]))*/,
+
+  reference:        /\$[a-zA-Z_]{1}[a-zA-Z\d_]*(?:(?:\.[a-zA-Z_]{1}[a-zA-z\d_]*)|(?:\[\d+\]))*/,
+  scoped_reference: /row(?:\.[a-zA-Z_]{1}[a-zA-z\d_]*(?:\[\d+\])?)*/,
+
   not_equals: '!=',
   equals:     '==',
   formula:    '=',
@@ -29,6 +32,8 @@ const lexer = moo.compile({
   lparen:     '(',
   rparen:     ')',
   separator:  ',',
+  each:       'each',
+  select:     'select',
   boolean:    ['true', 'false'],
   identifier: /[a-zA-Z][a-zA-Z_0-9]*/,
 })

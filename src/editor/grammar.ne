@@ -52,9 +52,40 @@ function booleanPost(data: any) {
     }
 }
 
+function eachPost(data: any) {
+    const parsed = {...data[0]}
+    parsed.type = 'each'
+    parsed.text = 'each'
+    parsed.value = {
+        context: data[0],
+        body: data[4]
+    }
+    return parsed
+}
+
 function functionParamPost(data: any) {
     const funcParam = Array.isArray(data[4]) ? data[4] : [data[4]]
     return [data[0], ...funcParam]
+}
+
+function scopedReferencePost(data: any) {
+    const parts = data[0].value.split('.').reduce((acc: string[], cur: string) => {
+        const startBracketIndex = cur.indexOf('[')
+        const endBracketIndex = cur.indexOf(']')
+
+        if (startBracketIndex !== -1 && endBracketIndex !== -1) {
+            const id = cur.slice(0, startBracketIndex)
+            const arrIndex = cur.slice(startBracketIndex + 1, endBracketIndex)
+            return [...acc, id, arrIndex]
+        }
+
+        return [...acc, cur]
+    },[])
+
+    const [ identifier, ...subpath ] = parts
+
+    data[0].value = { subpath }
+    return data[0]
 }
 
 function referencePost(data: any) {
@@ -86,11 +117,12 @@ function referencePost(data: any) {
 main -> %ws:* value %ws:* {% data => data[1] %}
 value -> formula
 
-formula -> formula_identifier boolean {% data => ({ ...data[0], value: data[1] }) %}
-         | formula_identifier arithmetic {% data => ({ ...data[0], value: data[1] }) %}
-         | formula_identifier comparison {% data => ({ ...data[0], value: data[1] }) %}
+formula -> formula_identifier each {% data => ({ ...data[0], value: data[1] }) %}
+         | formula_identifier operation {% data => ({ ...data[0], value: data[1] }) %}
 
 formula_identifier -> %formula {% id %}
+
+operation -> arithmetic {% id %} | comparison {% id %} | boolean {% id %} | string {% id %}
 
 arithmetic -> addition_subtraction {% data => { return data[0] } %}
 
@@ -117,6 +149,10 @@ exponent -> %exponent {% id %}
 number -> %number {% numberPost %}
         | function {% id %}
         | reference {% id %}
+        | scoped_reference {% id %}
+
+each -> reference %ws:+ %each %ws:+ operation {% eachPost %}
+      | function %ws:+ %each %ws:+ operation {% eachPost %}
 
 function -> identifier %ws:* "(" %ws:* parameter_list:* %ws:* ")" {% functionPost %}
 
@@ -134,6 +170,7 @@ comparable -> number {% id %} | boolean {% id %} | string {% id %}
 comparison_operator -> %equals {% id %} | %not_equals {% id %} | %lt {% id %} | %lte {% id %} | %gt {% id %} | %gte {% id %}
 
 reference -> %reference {% referencePost %}
+scoped_reference -> %scoped_reference {% scopedReferencePost %}
 identifier -> %identifier {% id %}
 string -> %string {% id %}
 boolean -> %boolean {% booleanPost %}

@@ -8,7 +8,7 @@ import {
 
 import {
   ParsedArithmetic,
-  ParsedBoolean, ParsedComparator, ParsedComparison,
+  ParsedBoolean, ParsedComparator, ParsedComparison, ParsedEach,
   ParsedFormula,
   ParsedFunction,
   ParsedNumber,
@@ -512,6 +512,13 @@ test("can make a comparison in a function parameter", () => {
   expect(b.value).toBe(2)
 })
 
+test("can be a string at the top level", () => {
+  const ast = parse('="hello"') as ParsedFormula
+
+  const string = ast.value as ParsedString
+  expect(string.value).toBe("hello")
+})
+
 test("can flatten ast", () => {
   const ast = parse('=1 + 2') as ParsedFormula
   const [...flat] = flatten(ast)
@@ -521,6 +528,26 @@ test("can flatten ast", () => {
   expect((flat[2] as ParsedNumber).value).toBe(1)
   expect((flat[3] as ParsedOperator).value).toBe("+")
   expect((flat[4] as ParsedNumber).value).toBe(2)
+})
+
+import util from 'util'
+
+test("can process each", () => {
+  const ast = parse('=$test each 1') as ParsedFormula
+  const each = ast.value as ParsedEach
+  const context = each.value.context as ParsedReference
+  const body = each.value.body as ParsedNumber
+
+  expect(context.type).toBe('reference')
+  expect(context.value.identifier).toBe('test')
+  expect(body.type).toBe('number')
+  expect(body.value).toBe(1)
+})
+
+test("can use row variables", () => {
+  const ast = parse('=$test each MAX("hello") + row.test * $whatever') as ParsedFormula
+  console.log(util.inspect(ast, {showHidden: false, depth: null, colors: true}))
+  expect(true).toBe(true)
 })
 
 test("can flatten more complex ast", () => {

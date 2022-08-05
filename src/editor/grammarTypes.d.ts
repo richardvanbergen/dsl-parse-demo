@@ -1,6 +1,6 @@
 export type GrammarPrimitive = 'boolean' | 'number'  | 'plus' | 'minus' | 'times' | 'divide' | 'exponent' | 'string'
 
-export type GrammarType =  'formula' | 'function' | 'arithmetic' | 'comparison' | 'reference' | GrammarPrimitive
+export type GrammarType =  'formula' | 'function' | 'arithmetic' | 'comparison' | 'reference' | 'each' | 'scoped_reference' | GrammarPrimitive
 
 export interface ParsedGrammar {
   type: GrammarType
@@ -94,6 +94,14 @@ export interface ParsedReference extends ParsedGrammar {
   }
 }
 
+export interface ParsedEach extends ParsedGrammar {
+  type: 'each'
+  value: {
+    context: ParsedFunction | ParsedReference
+    body: ParsedGrammar
+  }
+}
+
 export interface ParsedFunction extends ParsedGrammar {
   type: 'function'
   value: {
@@ -121,7 +129,9 @@ export type ParsedFormulaValue =
   ParsedNumber |
   ParsedString |
   ParsedFunction |
-  ParsedComparison
+  ParsedComparison |
+  ParsedReference |
+  ParsedEach
 
 export interface ParsedArithmetic extends ParsedGrammar {
   type: 'arithmetic'
@@ -134,5 +144,5 @@ export interface ParsedArithmetic extends ParsedGrammar {
 
 export interface ParsedFormula extends ParsedGrammar {
   type: "formula"
-  value: ParsedArithmetic | ParsedBoolean | ParsedNumber | ParsedFunction | ParsedReference | ParsedComparison
+  value: ParsedFormulaValue
 }

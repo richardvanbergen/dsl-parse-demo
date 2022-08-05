@@ -95,22 +95,40 @@ test("can match less than", () => {
   expect(result?.type).toBe('lt')
 })
 
-
 test("can match greater than", () => {
   const result = lexer.reset(`>`).next()
   expect(result?.type).toBe('gt')
 })
-
-
 
 test("can match less than or equal to", () => {
   const result = lexer.reset(`<=`).next()
   expect(result?.type).toBe('lte')
 })
 
-
 test("can match greater than or equal to", () => {
   const result = lexer.reset(`>=`).next()
   expect(result?.type).toBe('gte')
+})
+
+test("can match each", () => {
+  const result = lexer.reset(`each`).next()
+  expect(result?.type).toBe('each')
+})
+
+test("can match select from", () => {
+  const result = lexer.reset(`select`).next()
+  expect(result?.type).toBe('select')
+})
+
+test("can match rows", () => {
+  expect(lexer.reset(`row`).next()?.type).toBe('scoped_reference')
+  expect(lexer.reset(`row.test`).next()?.type).toBe('scoped_reference')
+  expect(lexer.reset(`row.test.test`).next()?.type).toBe('scoped_reference')
+})
+
+test("can match references", () => {
+  expect(lexer.reset(`$input`).next()?.type).toBe('reference')
+  expect(lexer.reset(`$input.test`).next()?.type).toBe('reference')
+  expect(lexer.reset(`$input.test.test`).next()?.type).toBe('reference')
 })
 

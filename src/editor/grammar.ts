@@ -11,6 +11,7 @@ declare var times: any;
 declare var divide: any;
 declare var exponent: any;
 declare var number: any;
+declare var each: any;
 declare var equals: any;
 declare var not_equals: any;
 declare var lt: any;
@@ -18,6 +19,7 @@ declare var lte: any;
 declare var gt: any;
 declare var gte: any;
 declare var reference: any;
+declare var scoped_reference: any;
 declare var identifier: any;
 declare var string: any;
 declare var boolean: any;
@@ -75,9 +77,39 @@ function booleanPost(data: any) {
     }
 }
 
+function eachPost(data: any) {
+    const parsed = {...data[0]}
+    parsed.type = 'each'
+    parsed.value = {
+        context: data[0],
+        body: data[4]
+    }
+    return parsed
+}
+
 function functionParamPost(data: any) {
     const funcParam = Array.isArray(data[4]) ? data[4] : [data[4]]
     return [data[0], ...funcParam]
+}
+
+function scopedReferencePost(data: any) {
+    const parts = data[0].value.split('.').reduce((acc: string[], cur: string) => {
+        const startBracketIndex = cur.indexOf('[')
+        const endBracketIndex = cur.indexOf(']')
+
+        if (startBracketIndex !== -1 && endBracketIndex !== -1) {
+            const id = cur.slice(0, startBracketIndex)
+            const arrIndex = cur.slice(startBracketIndex + 1, endBracketIndex)
+            return [...acc, id, arrIndex]
+        }
+
+        return [...acc, cur]
+    },[])
+
+    const [ identifier, ...subpath ] = parts
+
+    data[0].value = { subpath }
+    return data[0]
 }
 
 function referencePost(data: any) {
@@ -138,10 +170,13 @@ const grammar: Grammar = {
     {"name": "main$ebnf$2", "symbols": ["main$ebnf$2", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "main", "symbols": ["main$ebnf$1", "value", "main$ebnf$2"], "postprocess": data => data[1]},
     {"name": "value", "symbols": ["formula"]},
-    {"name": "formula", "symbols": ["formula_identifier", "boolean"], "postprocess": data => ({ ...data[0], value: data[1] })},
-    {"name": "formula", "symbols": ["formula_identifier", "arithmetic"], "postprocess": data => ({ ...data[0], value: data[1] })},
-    {"name": "formula", "symbols": ["formula_identifier", "comparison"], "postprocess": data => ({ ...data[0], value: data[1] })},
+    {"name": "formula", "symbols": ["formula_identifier", "each"], "postprocess": data => ({ ...data[0], value: data[1] })},
+    {"name": "formula", "symbols": ["formula_identifier", "operation"], "postprocess": data => ({ ...data[0], value: data[1] })},
     {"name": "formula_identifier", "symbols": [(lexer.has("formula") ? {type: "formula"} : formula)], "postprocess": id},
+    {"name": "operation", "symbols": ["arithmetic"], "postprocess": id},
+    {"name": "operation", "symbols": ["comparison"], "postprocess": id},
+    {"name": "operation", "symbols": ["boolean"], "postprocess": id},
+    {"name": "operation", "symbols": ["string"], "postprocess": id},
     {"name": "arithmetic", "symbols": ["addition_subtraction"], "postprocess": data => { return data[0] }},
     {"name": "addition_subtraction$ebnf$1", "symbols": []},
     {"name": "addition_subtraction$ebnf$1", "symbols": ["addition_subtraction$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
@@ -185,6 +220,22 @@ const grammar: Grammar = {
     {"name": "number", "symbols": [(lexer.has("number") ? {type: "number"} : number)], "postprocess": numberPost},
     {"name": "number", "symbols": ["function"], "postprocess": id},
     {"name": "number", "symbols": ["reference"], "postprocess": id},
+    {"name": "number", "symbols": ["scoped_reference"], "postprocess": id},
+    {"name": "each$ebnf$1", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
+    {"name": "each$ebnf$1", "symbols": ["each$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "each$ebnf$2", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
+    {"name": "each$ebnf$2", "symbols": ["each$ebnf$2", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "each", "symbols": ["reference", "each$ebnf$1", (lexer.has("each") ? {type: "each"} : each), "each$ebnf$2", "operation"], "postprocess": eachPost},
+    {"name": "each$ebnf$3", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
+    {"name": "each$ebnf$3", "symbols": ["each$ebnf$3", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "each$ebnf$4", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
+    {"name": "each$ebnf$4", "symbols": ["each$ebnf$4", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "each", "symbols": ["function", "each$ebnf$3", (lexer.has("each") ? {type: "each"} : each), "each$ebnf$4", "operation"], "postprocess": eachPost},
+    {"name": "each$ebnf$5", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
+    {"name": "each$ebnf$5", "symbols": ["each$ebnf$5", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "each$ebnf$6", "symbols": [(lexer.has("ws") ? {type: "ws"} : ws)]},
+    {"name": "each$ebnf$6", "symbols": ["each$ebnf$6", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "each", "symbols": ["scoped_reference", "each$ebnf$5", (lexer.has("each") ? {type: "each"} : each), "each$ebnf$6", "operation"], "postprocess": eachPost},
     {"name": "function$ebnf$1", "symbols": []},
     {"name": "function$ebnf$1", "symbols": ["function$ebnf$1", (lexer.has("ws") ? {type: "ws"} : ws)], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "function$ebnf$2", "symbols": []},
@@ -219,6 +270,7 @@ const grammar: Grammar = {
     {"name": "comparison_operator", "symbols": [(lexer.has("gt") ? {type: "gt"} : gt)], "postprocess": id},
     {"name": "comparison_operator", "symbols": [(lexer.has("gte") ? {type: "gte"} : gte)], "postprocess": id},
     {"name": "reference", "symbols": [(lexer.has("reference") ? {type: "reference"} : reference)], "postprocess": referencePost},
+    {"name": "scoped_reference", "symbols": [(lexer.has("scoped_reference") ? {type: "scoped_reference"} : scoped_reference)], "postprocess": scopedReferencePost},
     {"name": "identifier", "symbols": [(lexer.has("identifier") ? {type: "identifier"} : identifier)], "postprocess": id},
     {"name": "string", "symbols": [(lexer.has("string") ? {type: "string"} : string)], "postprocess": id},
     {"name": "boolean", "symbols": [(lexer.has("boolean") ? {type: "boolean"} : boolean)], "postprocess": booleanPost}
